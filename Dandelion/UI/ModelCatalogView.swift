@@ -65,12 +65,13 @@ struct ModelCatalogView: View {
 
                 Picker("Sort", selection: $viewModel.sortOption) {
                     ForEach(CatalogSortOption.allCases) { option in
-                        Text(option.rawValue).tag(option)
+                        Label(option.title, systemImage: option.systemImage).tag(option)
                     }
                 }
+                .pickerStyle(.menu)
                 .font(TerminalTheme.Fonts.caption)
                 .labelsHidden()
-                .frame(width: 110)
+                .frame(width: 130)
             }
         }
     }
@@ -141,6 +142,13 @@ private struct CatalogModelRow: View {
 
     private var statsLine: String {
         let pricing = model.pricing
+        if model.provider == .zen {
+            if pricing.isFree {
+                return "Free"
+            }
+            return "\(Self.simplePrice(pricing.inputPerM)) · \(Self.simplePrice(pricing.outputPerM))"
+        }
+
         var parts: [String] = []
         if pricing.isFree {
             parts.append("Free")
@@ -160,6 +168,10 @@ private struct CatalogModelRow: View {
 
     private static func price(_ value: Double) -> String {
         "$" + String(format: "%.2f", value) + "/M"
+    }
+
+    private static func simplePrice(_ value: Double) -> String {
+        "$" + String(format: "%.2f", value)
     }
 
     private static func tokens(_ value: Int) -> String {

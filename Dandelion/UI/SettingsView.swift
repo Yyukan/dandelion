@@ -2,9 +2,9 @@
 //  SettingsView.swift
 //  Dandelion
 //
-//  Auto-refresh interval picker, manual cookie/workspace-id override fields
-//  (the fallback for when browser cookie/workspace auto-discovery fails),
-//  an Open Console link, and Quit.
+//  Auto-refresh interval picker and manual cookie/workspace-id override
+//  fields (the fallback for when browser cookie/workspace auto-discovery
+//  fails).
 //
 
 import SwiftUI
@@ -12,7 +12,6 @@ import SwiftUI
 struct SettingsView: View {
     @Bindable var appSettings: AppSettings
     let refreshCoordinator: RefreshCoordinator
-    var onQuit: () -> Void = {}
 
     @State private var cookieOverrideText: String = ""
     @State private var didSaveCookie = false
@@ -26,8 +25,6 @@ struct SettingsView: View {
             refreshSection
             Divider().overlay(TerminalTheme.Colors.border)
             overrideSection
-            Divider().overlay(TerminalTheme.Colors.border)
-            footer
         }
         .padding(TerminalTheme.Spacing.lg)
         .frame(width: 360)
@@ -97,19 +94,7 @@ struct SettingsView: View {
                 }
 
                 Spacer()
-
-                Link("Open Console", destination: URL(string: "https://opencode.ai/zen")!)
-                    .font(TerminalTheme.Fonts.caption)
-                    .foregroundStyle(TerminalTheme.Colors.accent)
             }
-        }
-    }
-
-    private var footer: some View {
-        HStack {
-            Spacer()
-            Button("Quit Dandelion", action: onQuit)
-                .font(TerminalTheme.Fonts.caption)
         }
     }
 

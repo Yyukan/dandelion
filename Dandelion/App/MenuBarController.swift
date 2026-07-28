@@ -136,6 +136,7 @@ final class MenuBarController: NSObject {
     private func showSettingsWindow() {
         let window = settingsWindow ?? makeSettingsWindow()
         settingsWindow = window
+        window.center()
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -143,14 +144,14 @@ final class MenuBarController: NSObject {
     private func makeSettingsWindow() -> NSWindow {
         let content = SettingsView(
             appSettings: appSettings,
-            refreshCoordinator: refreshCoordinator,
-            onQuit: { NSApp.terminate(nil) }
+            refreshCoordinator: refreshCoordinator
         )
         let hostingController = NSHostingController(rootView: content)
         let window = NSWindow(contentViewController: hostingController)
         window.title = "Dandelion Settings"
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
+        window.level = .floating
         return window
     }
 }

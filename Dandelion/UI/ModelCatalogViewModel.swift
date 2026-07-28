@@ -21,11 +21,27 @@ enum CredentialConnectionState: Equatable {
 
 enum CatalogSortOption: String, CaseIterable, Identifiable, Sendable {
     case name = "Name"
-    case inputPrice = "Input $/M"
-    case outputPrice = "Output $/M"
-    case context = "Context"
+    case priceAscending = "Price ascending"
+    case priceDescending = "Price descending"
 
     var id: String { rawValue }
+
+    /// Text shown in the sort picker; price options share the same title and
+    /// are distinguished by their `systemImage` arrow glyph.
+    var title: String {
+        switch self {
+        case .name: "Name"
+        case .priceAscending, .priceDescending: "Price"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .name: "textformat"
+        case .priceAscending: "arrow.up"
+        case .priceDescending: "arrow.down"
+        }
+    }
 }
 
 @MainActor
@@ -66,12 +82,10 @@ final class ModelCatalogViewModel {
         switch sortOption {
         case .name:
             result.sort { $0.displayName < $1.displayName }
-        case .inputPrice:
+        case .priceAscending:
             result.sort { $0.pricing.inputPerM < $1.pricing.inputPerM }
-        case .outputPrice:
-            result.sort { $0.pricing.outputPerM < $1.pricing.outputPerM }
-        case .context:
-            result.sort { $0.limit.contextTokens > $1.limit.contextTokens }
+        case .priceDescending:
+            result.sort { $0.pricing.inputPerM > $1.pricing.inputPerM }
         }
 
         return result
