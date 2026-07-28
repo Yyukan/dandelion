@@ -1,0 +1,43 @@
+name: Dandelion
+options:
+  bundleIdPrefix: nl.ostconsultancy
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_HARDENED_RUNTIME: YES
+targets:
+  Dandelion:
+    type: application
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Dandelion
+    dependencies:
+      - sdk: libsqlite3.tbd
+    info:
+      path: Dandelion/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: Dandelion
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        NSHumanReadableCopyright: "Copyright © 2026 Oleksandr S"
+    entitlements:
+      path: Dandelion/Dandelion.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.network.client: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.ostconsultancy.Dandelion
+        PRODUCT_NAME: Dandelion
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_EMIT_LOC_STRINGS: YES
+        ENABLE_PREVIEWS: YES

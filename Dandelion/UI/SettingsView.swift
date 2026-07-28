@@ -1,0 +1,139 @@
+//
+//  SettingsView.swift
+//  Dandelion
+//
+//  Auto-refresh interval picker, manual cookie/workspace-id override fields
+//  (the fallback for when browser cookie/workspace auto-discovery fails),
+//  an Open Console link, and Quit.
+//
+
+import SwiftUI
+
+struct SettingsView: View {
+    @Bindable var appSettings: AppSettings
+    let refreshCoordinator: RefreshCoordinator
+    var onQuit: () -> Void = {}
+
+    @State private var cookieOverrideText: String = ""
+    @State private var didSaveCookie = false
+    private let overrideStore = CookieOverrideStore()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: TerminalTheme.Spacing.lg) {
+            Text("Settings")
+                .font(TerminalTheme.Fonts.title)
+
+            refreshSection
+            Divider().overlay(TerminalTheme.Colors.border)
+            overrideSection
+            Divider().overlay(TerminalTheme.Colors.border)
+            footer
+        }
+        .padding(TerminalTheme.Spacing.lg)
+        .frame(width: 360)
+        .background(TerminalTheme.Colors.background)
+        .foregroundStyle(TerminalTheme.Colors.textPrimary)
+        .onAppear { cookieOverrideText = overrideStore.load() ?? "" }
+    }
+
+    private var refreshSection: some View {
+        VStack(alignment: .leading, spacing: TerminalTheme.Spacing.sm) {
+            Text("Refresh")
+                .font(TerminalTheme.Fonts.heading)
+
+            Toggle("Auto-refresh", isOn: Binding(
+                get: { appSettings.autoRefreshEnabled },
+                set: { refreshCoordinator.setAutoRefreshEnabled($0) }
+            ))
+            .toggleStyle(.switch)
+            .font(TerminalTheme.Fonts.body)
+
+            Picker("Interval", selection: Binding(
+                get: { appSettings.autoRefreshInterval },
+                set: { refreshCoordinator.setAutoRefreshInterval($0) }
+            )) {
+                ForEach(AppSettings.availableIntervals, id: \.self) { interval in
+                    Text(Self.intervalLabel(interval)).tag(interval)
+                }
+            }
+            .font(TerminalTheme.Fonts.body)
+            .disabled(!appSettings.autoRefreshEnabled)
+        }
+    }
+
+    private var overrideSection: some View {
+        VStack(alignment: .leading, spacing: TerminalTheme.Spacing.sm) {
+            Text("Manual override")
+                .font(TerminalTheme.Fonts.heading)
+            Text("Used only when automatic browser session discovery fails.")
+                .font(TerminalTheme.Fonts.caption)
+                .foregroundStyle(TerminalTheme.Colors.textSecondary)
+
+            TextField("opencode.ai session cookie", text: $cookieOverrideText)
+                .textFieldStyle(.plain)
+                .font(TerminalTheme.Fonts.body)
+                .padding(TerminalTheme.Spacing.sm)
+                .background(TerminalTheme.Colors.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+
+            TextField("Workspace ID (e.g. wrk_...)", text: $appSettings.manualWorkspaceID)
+                .textFieldStyle(.plain)
+                .font(TerminalTheme.Fonts.body)
+                .padding(TerminalTheme.Spacing.sm)
+                .background(TerminalTheme.Colors.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+
+            HStack {
+                Button("Save Cookie") {
+                    overrideStore.save(cookieOverrideText)
+                    didSaveCookie = true
+                }
+                .font(TerminalTheme.Fonts.caption)
+
+                if didSaveCookie {
+                    Text("Saved")
+                        .font(TerminalTheme.Fonts.caption)
+                        .foregroundStyle(TerminalTheme.Colors.accent)
+                }
+
+                Spacer()
+
+                Link("Open Console", destination: URL(string: "https://opencode.ai/zen")!)
+                    .font(TerminalTheme.Fonts.caption)
+                    .foregroundStyle(TerminalTheme.Colors.accent)
+            }
+        }
+    }
+
+    private var footer: some View {
+        HStack {
+            Spacer()
+            Button("Quit Dandelion", action: onQuit)
+                .font(TerminalTheme.Fonts.caption)
+        }
+    }
+
+    private static func intervalLabel(_ interval: TimeInterval) -> String {
+        switch interval {
+        case 30: "30 seconds"
+        case 60: "1 minute"
+        case 300: "5 minutes"
+        case 900: "15 minutes"
+        default: "\(Int(interval))s"
+        }
+    }
+}
+
+#Preview {
+    let appSettings = AppSettings()
+    let catalogViewModel = ModelCatalogViewModel()
+    return SettingsView(
+        appSettings: appSettings,
+        refreshCoordinator: RefreshCoordinator(
+            appSettings: appSettings,
+            catalogViewModel: catalogViewModel,
+            zenBalanceViewModel: ZenBalanceViewModel(appSettings: appSettings),
+            goUsageViewModel: GoUsageViewModel(appSettings: appSettings)
+        )
+    )
+}

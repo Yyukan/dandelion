@@ -1,0 +1,453 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0308DD36E92B8BA552FDBB55 /* RefreshCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E4A58143CD99971CD1761A /* RefreshCoordinator.swift */; };
+		032B873F97A406E9F621C7E5 /* GoUsageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545A3020C5D65593B1D06321 /* GoUsageCard.swift */; };
+		0D5333A41813CE27C34BB816 /* UsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D9AF622BACAAFEBD3C488A /* UsageService.swift */; };
+		2608C64462CEAF595809D867 /* GoUsageWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EF60F0279BFCFFDF2CBA509 /* GoUsageWindow.swift */; };
+		33329138108DAC20B234C187 /* GoUsageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5B6E84B3475DE146A33B76 /* GoUsageViewModel.swift */; };
+		3B7373F855B8D1546E2ECCCB /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7F56AAA0ED5887C84FF343 /* MenuBarController.swift */; };
+		461DCF2C5A10337E94CAE17C /* ZenBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80861F8A42DCA93569D7E984 /* ZenBalance.swift */; };
+		464EAF1754B5F1455606F7D6 /* ZenBalanceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B29CC5DBBA3437F1B572525 /* ZenBalanceViewModel.swift */; };
+		68A5E64A0387EC5C657687AA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAD8EB314FDCB4CC31B2D36 /* SettingsView.swift */; };
+		6F9BFFDE085BD01BF31D1505 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8663CA994121E94C78CA796E /* AppSettings.swift */; };
+		72F3EA67091C54B2F7FC56C6 /* ModelCatalogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFCDF56133A5E949D92164B1 /* ModelCatalogService.swift */; };
+		84B05A6A1B2B6E6256F93DF7 /* DashboardPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B329A6802E36280172A28579 /* DashboardPanel.swift */; };
+		938426F73B702B8E62631E24 /* DandelionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0B65FE662895428D19727E /* DandelionApp.swift */; };
+		98CDFE9B133B01D9BC8C719A /* CookieOverrideStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B0FCBFC49F471DDCFE504F0 /* CookieOverrideStore.swift */; };
+		9E09A1C1B64DF996105D970A /* ModelCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36C8BA2D7D6D69954B99F30 /* ModelCatalogView.swift */; };
+		9FD4D326A72E00A78B2C79E0 /* CookieDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3834C36B0F80DEFCED5D226 /* CookieDiscoveryService.swift */; };
+		A609855C4796E330A8D6F51A /* RingGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FC8D657BE6C75ACDB232ACB /* RingGaugeView.swift */; };
+		B468B6227699EA6E073BAB01 /* ModelCatalogViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD2262C98E6BA4AAE3FA2EF7 /* ModelCatalogViewModel.swift */; };
+		C2F85C32D9FAE0D188360894 /* AuthDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */; };
+		C9F4F17CABCA7EFB2D26EC19 /* ZenBalanceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2147BB94591BDE0E70B7D85 /* ZenBalanceCard.swift */; };
+		CAA9912AB8B718DCD74DBA25 /* TerminalTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6537974182E950BC2B7C054C /* TerminalTheme.swift */; };
+		D05D4B7F75AD9A83B21FCCAA /* KeyValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FF43C8218A69C6B10BA3BA /* KeyValidationService.swift */; };
+		E4D08B353924FDF08B886385 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4164C386CD52D532547A2394 /* libsqlite3.tbd */; };
+		E6E1BD19248D19055267CA23 /* CatalogModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E7DC803AC43CE91B72F6F4 /* CatalogModel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		098F4862742BEB075A0DB065 /* Dandelion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dandelion.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A5B6E84B3475DE146A33B76 /* GoUsageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoUsageViewModel.swift; sourceTree = "<group>"; };
+		0FC8D657BE6C75ACDB232ACB /* RingGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingGaugeView.swift; sourceTree = "<group>"; };
+		11D9AF622BACAAFEBD3C488A /* UsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageService.swift; sourceTree = "<group>"; };
+		2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthDiscoveryService.swift; sourceTree = "<group>"; };
+		3A0B65FE662895428D19727E /* DandelionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DandelionApp.swift; sourceTree = "<group>"; };
+		3B0FCBFC49F471DDCFE504F0 /* CookieOverrideStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieOverrideStore.swift; sourceTree = "<group>"; };
+		4164C386CD52D532547A2394 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		45BB514A4704875592D111DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		52E7DC803AC43CE91B72F6F4 /* CatalogModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogModel.swift; sourceTree = "<group>"; };
+		545A3020C5D65593B1D06321 /* GoUsageCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoUsageCard.swift; sourceTree = "<group>"; };
+		5AAD8EB314FDCB4CC31B2D36 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		61AD50AFB201B43893A13D99 /* Dandelion.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Dandelion.entitlements; sourceTree = "<group>"; };
+		6537974182E950BC2B7C054C /* TerminalTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTheme.swift; sourceTree = "<group>"; };
+		7B29CC5DBBA3437F1B572525 /* ZenBalanceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenBalanceViewModel.swift; sourceTree = "<group>"; };
+		7EF60F0279BFCFFDF2CBA509 /* GoUsageWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoUsageWindow.swift; sourceTree = "<group>"; };
+		80861F8A42DCA93569D7E984 /* ZenBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenBalance.swift; sourceTree = "<group>"; };
+		8663CA994121E94C78CA796E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		9F7F56AAA0ED5887C84FF343 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		A7FF43C8218A69C6B10BA3BA /* KeyValidationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyValidationService.swift; sourceTree = "<group>"; };
+		B329A6802E36280172A28579 /* DashboardPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardPanel.swift; sourceTree = "<group>"; };
+		B5E4A58143CD99971CD1761A /* RefreshCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshCoordinator.swift; sourceTree = "<group>"; };
+		C2147BB94591BDE0E70B7D85 /* ZenBalanceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenBalanceCard.swift; sourceTree = "<group>"; };
+		C3834C36B0F80DEFCED5D226 /* CookieDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieDiscoveryService.swift; sourceTree = "<group>"; };
+		CD2262C98E6BA4AAE3FA2EF7 /* ModelCatalogViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalogViewModel.swift; sourceTree = "<group>"; };
+		E36C8BA2D7D6D69954B99F30 /* ModelCatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalogView.swift; sourceTree = "<group>"; };
+		FFCDF56133A5E949D92164B1 /* ModelCatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalogService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		68CEFCDB9A66C0609E422E2A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E4D08B353924FDF08B886385 /* libsqlite3.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		40CF3CEE24C7A1D7B87C064C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4164C386CD52D532547A2394 /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4498C7FB6C074863601DA869 = {
+			isa = PBXGroup;
+			children = (
+				545BDF88E749BF80BC724A73 /* Dandelion */,
+				40CF3CEE24C7A1D7B87C064C /* Frameworks */,
+				CFB924091852448BA8F66B77 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		46EC39AD4824F2122C7D0696 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				B329A6802E36280172A28579 /* DashboardPanel.swift */,
+				545A3020C5D65593B1D06321 /* GoUsageCard.swift */,
+				0A5B6E84B3475DE146A33B76 /* GoUsageViewModel.swift */,
+				E36C8BA2D7D6D69954B99F30 /* ModelCatalogView.swift */,
+				CD2262C98E6BA4AAE3FA2EF7 /* ModelCatalogViewModel.swift */,
+				0FC8D657BE6C75ACDB232ACB /* RingGaugeView.swift */,
+				5AAD8EB314FDCB4CC31B2D36 /* SettingsView.swift */,
+				C2147BB94591BDE0E70B7D85 /* ZenBalanceCard.swift */,
+				7B29CC5DBBA3437F1B572525 /* ZenBalanceViewModel.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		545BDF88E749BF80BC724A73 /* Dandelion */ = {
+			isa = PBXGroup;
+			children = (
+				61AD50AFB201B43893A13D99 /* Dandelion.entitlements */,
+				45BB514A4704875592D111DF /* Info.plist */,
+				931DE8ECCAEBC2DCF5AECD24 /* App */,
+				6A39F91A8CDAC4F42AE4951D /* Models */,
+				9EE8D156BE88B446010913A5 /* Services */,
+				BB23B5679B0C6337727B75DE /* Theme */,
+				46EC39AD4824F2122C7D0696 /* UI */,
+			);
+			path = Dandelion;
+			sourceTree = "<group>";
+		};
+		6A39F91A8CDAC4F42AE4951D /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				52E7DC803AC43CE91B72F6F4 /* CatalogModel.swift */,
+				7EF60F0279BFCFFDF2CBA509 /* GoUsageWindow.swift */,
+				80861F8A42DCA93569D7E984 /* ZenBalance.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		931DE8ECCAEBC2DCF5AECD24 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				3A0B65FE662895428D19727E /* DandelionApp.swift */,
+				9F7F56AAA0ED5887C84FF343 /* MenuBarController.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		9EE8D156BE88B446010913A5 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				8663CA994121E94C78CA796E /* AppSettings.swift */,
+				2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */,
+				C3834C36B0F80DEFCED5D226 /* CookieDiscoveryService.swift */,
+				3B0FCBFC49F471DDCFE504F0 /* CookieOverrideStore.swift */,
+				A7FF43C8218A69C6B10BA3BA /* KeyValidationService.swift */,
+				FFCDF56133A5E949D92164B1 /* ModelCatalogService.swift */,
+				B5E4A58143CD99971CD1761A /* RefreshCoordinator.swift */,
+				11D9AF622BACAAFEBD3C488A /* UsageService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BB23B5679B0C6337727B75DE /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				6537974182E950BC2B7C054C /* TerminalTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		CFB924091852448BA8F66B77 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				098F4862742BEB075A0DB065 /* Dandelion.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E719ED0BA38FD75A1F20737C /* Dandelion */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A9CCA6CC43702828D4C65CE /* Build configuration list for PBXNativeTarget "Dandelion" */;
+			buildPhases = (
+				7C73B50C86620BA928C5B021 /* Sources */,
+				68CEFCDB9A66C0609E422E2A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Dandelion;
+			packageProductDependencies = (
+			);
+			productName = Dandelion;
+			productReference = 098F4862742BEB075A0DB065 /* Dandelion.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		64E143E4CEF4902C9C88E225 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = B50709B6F667ABFAF0350290 /* Build configuration list for PBXProject "Dandelion" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4498C7FB6C074863601DA869;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = CFB924091852448BA8F66B77 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E719ED0BA38FD75A1F20737C /* Dandelion */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7C73B50C86620BA928C5B021 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6F9BFFDE085BD01BF31D1505 /* AppSettings.swift in Sources */,
+				C2F85C32D9FAE0D188360894 /* AuthDiscoveryService.swift in Sources */,
+				E6E1BD19248D19055267CA23 /* CatalogModel.swift in Sources */,
+				9FD4D326A72E00A78B2C79E0 /* CookieDiscoveryService.swift in Sources */,
+				98CDFE9B133B01D9BC8C719A /* CookieOverrideStore.swift in Sources */,
+				938426F73B702B8E62631E24 /* DandelionApp.swift in Sources */,
+				84B05A6A1B2B6E6256F93DF7 /* DashboardPanel.swift in Sources */,
+				032B873F97A406E9F621C7E5 /* GoUsageCard.swift in Sources */,
+				33329138108DAC20B234C187 /* GoUsageViewModel.swift in Sources */,
+				2608C64462CEAF595809D867 /* GoUsageWindow.swift in Sources */,
+				D05D4B7F75AD9A83B21FCCAA /* KeyValidationService.swift in Sources */,
+				3B7373F855B8D1546E2ECCCB /* MenuBarController.swift in Sources */,
+				72F3EA67091C54B2F7FC56C6 /* ModelCatalogService.swift in Sources */,
+				9E09A1C1B64DF996105D970A /* ModelCatalogView.swift in Sources */,
+				B468B6227699EA6E073BAB01 /* ModelCatalogViewModel.swift in Sources */,
+				0308DD36E92B8BA552FDBB55 /* RefreshCoordinator.swift in Sources */,
+				A609855C4796E330A8D6F51A /* RingGaugeView.swift in Sources */,
+				68A5E64A0387EC5C657687AA /* SettingsView.swift in Sources */,
+				CAA9912AB8B718DCD74DBA25 /* TerminalTheme.swift in Sources */,
+				0D5333A41813CE27C34BB816 /* UsageService.swift in Sources */,
+				461DCF2C5A10337E94CAE17C /* ZenBalance.swift in Sources */,
+				C9F4F17CABCA7EFB2D26EC19 /* ZenBalanceCard.swift in Sources */,
+				464EAF1754B5F1455606F7D6 /* ZenBalanceViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		516A6CD6B1D607412A60A24E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		6DA37AA2B1409DDD4397BB8E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		A2832885652C3B39804AE781 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Dandelion/Dandelion.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Dandelion/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.ostconsultancy.Dandelion;
+				PRODUCT_NAME = Dandelion;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		A85BDE1CBF7CBED9509B7B7C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Dandelion/Dandelion.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Dandelion/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.ostconsultancy.Dandelion;
+				PRODUCT_NAME = Dandelion;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5A9CCA6CC43702828D4C65CE /* Build configuration list for PBXNativeTarget "Dandelion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A2832885652C3B39804AE781 /* Debug */,
+				A85BDE1CBF7CBED9509B7B7C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B50709B6F667ABFAF0350290 /* Build configuration list for PBXProject "Dandelion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6DA37AA2B1409DDD4397BB8E /* Debug */,
+				516A6CD6B1D607412A60A24E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 64E143E4CEF4902C9C88E225 /* Project object */;
+}
