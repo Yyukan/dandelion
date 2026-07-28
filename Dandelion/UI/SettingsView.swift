@@ -2,9 +2,7 @@
 //  SettingsView.swift
 //  Dandelion
 //
-//  Auto-refresh interval picker and manual cookie/workspace-id override
-//  fields (the fallback for when browser cookie/workspace auto-discovery
-//  fails).
+//  Auto-refresh interval picker.
 //
 
 import SwiftUI
@@ -13,24 +11,17 @@ struct SettingsView: View {
     @Bindable var appSettings: AppSettings
     let refreshCoordinator: RefreshCoordinator
 
-    @State private var cookieOverrideText: String = ""
-    @State private var didSaveCookie = false
-    private let overrideStore = CookieOverrideStore()
-
     var body: some View {
         VStack(alignment: .leading, spacing: TerminalTheme.Spacing.lg) {
             Text("Settings")
                 .font(TerminalTheme.Fonts.title)
 
             refreshSection
-            Divider().overlay(TerminalTheme.Colors.border)
-            overrideSection
         }
         .padding(TerminalTheme.Spacing.lg)
         .frame(width: 360)
         .background(TerminalTheme.Colors.background)
         .foregroundStyle(TerminalTheme.Colors.textPrimary)
-        .onAppear { cookieOverrideText = overrideStore.load() ?? "" }
     }
 
     private var refreshSection: some View {
@@ -55,46 +46,6 @@ struct SettingsView: View {
             }
             .font(TerminalTheme.Fonts.body)
             .disabled(!appSettings.autoRefreshEnabled)
-        }
-    }
-
-    private var overrideSection: some View {
-        VStack(alignment: .leading, spacing: TerminalTheme.Spacing.sm) {
-            Text("Manual override")
-                .font(TerminalTheme.Fonts.heading)
-            Text("Used only when automatic browser session discovery fails.")
-                .font(TerminalTheme.Fonts.caption)
-                .foregroundStyle(TerminalTheme.Colors.textSecondary)
-
-            TextField("opencode.ai session cookie", text: $cookieOverrideText)
-                .textFieldStyle(.plain)
-                .font(TerminalTheme.Fonts.body)
-                .padding(TerminalTheme.Spacing.sm)
-                .background(TerminalTheme.Colors.surfaceElevated)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-
-            TextField("Workspace ID (e.g. wrk_...)", text: $appSettings.manualWorkspaceID)
-                .textFieldStyle(.plain)
-                .font(TerminalTheme.Fonts.body)
-                .padding(TerminalTheme.Spacing.sm)
-                .background(TerminalTheme.Colors.surfaceElevated)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-
-            HStack {
-                Button("Save Cookie") {
-                    overrideStore.save(cookieOverrideText)
-                    didSaveCookie = true
-                }
-                .font(TerminalTheme.Fonts.caption)
-
-                if didSaveCookie {
-                    Text("Saved")
-                        .font(TerminalTheme.Fonts.caption)
-                        .foregroundStyle(TerminalTheme.Colors.accent)
-                }
-
-                Spacer()
-            }
         }
     }
 

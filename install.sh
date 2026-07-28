@@ -25,6 +25,13 @@ echo "==> Building Dandelion (Release)..."
 xcodebuild -project Dandelion.xcodeproj -scheme Dandelion -configuration Release build
 
 echo "==> Installing Dandelion.app to /Applications..."
+# Quit any running instance and remove the previous bundle outright rather
+# than letting `cp -R` merge into it - merging into an existing app bundle
+# leaves stale files behind that don't match the freshly-sealed code
+# signature, which macOS then kills on launch with a
+# "SIGKILL (Code Signature Invalid)" crash.
+pkill -x Dandelion 2>/dev/null || true
+rm -rf /Applications/Dandelion.app
 cp -R ~/Library/Developer/Xcode/DerivedData/Dandelion-*/Build/Products/Release/Dandelion.app /Applications/
 
 echo "==> Launching Dandelion..."

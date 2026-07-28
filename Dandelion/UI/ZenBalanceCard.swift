@@ -31,6 +31,8 @@ struct ZenBalanceCard: View {
                 loadedContent(balance)
             case .unavailable:
                 UnavailableStateView()
+            case .sessionExpired:
+                SessionExpiredStateView(consoleURL: URL(string: "https://opencode.ai/zen")!)
             }
         }
         .task { await viewModel.refresh() }
@@ -93,6 +95,28 @@ private struct UnavailableStateView: View {
                         .font(TerminalTheme.Fonts.caption)
                         .foregroundStyle(TerminalTheme.Colors.accent)
                 }
+            }
+        }
+    }
+}
+
+/// Shown when a cookie was found but the endpoint no longer recognizes it -
+/// most likely the browser session has expired since it was discovered.
+private struct SessionExpiredStateView: View {
+    let consoleURL: URL
+
+    var body: some View {
+        HStack(spacing: TerminalTheme.Spacing.sm) {
+            RingGaugeView(progress: 0, valueText: "—", label: "Balance", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 6)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Session expired")
+                    .font(TerminalTheme.Fonts.body.weight(.semibold))
+                Text("Please relogin in the browser, then refresh.")
+                    .font(TerminalTheme.Fonts.caption)
+                    .foregroundStyle(TerminalTheme.Colors.textSecondary)
+                Link("Open Console", destination: consoleURL)
+                    .font(TerminalTheme.Fonts.caption)
+                    .foregroundStyle(TerminalTheme.Colors.accent)
             }
         }
     }

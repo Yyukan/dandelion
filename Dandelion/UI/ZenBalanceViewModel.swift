@@ -14,9 +14,12 @@ import Observation
 enum ZenBalanceState: Equatable {
     case loading
     case loaded(ZenBalance)
-    /// Cookie discovery or the private endpoint failed - show "—" + a link
-    /// to the real console instead of crashing or blocking the rest of the UI.
+    /// No session cookie could be found at all - show "—" + a link to the
+    /// real console instead of crashing or blocking the rest of the UI.
     case unavailable
+    /// A cookie was found, but the endpoint no longer recognizes it - most
+    /// likely the browser session has expired and needs a fresh login.
+    case sessionExpired
 }
 
 @MainActor
@@ -60,6 +63,16 @@ final class ZenBalanceViewModel {
                 workspaceIDOverride: workspaceOverride.isEmpty ? nil : workspaceOverride
             )
             state = .loaded(balance)
+        } catch let error as UsageServiceError {
+            switch error {
+            case .workspaceNotFound, .balanceNotFound:
+                // A cookie was found, but the authenticated page couldn't be
+                // parsed - the most likely cause is that the browser session
+                // behind it has since expired.
+                state = .sessionExpired
+            case .goUsageNotFound, .network:
+                state = .unavailable
+            }
         } catch {
             state = .unavailable
         }
