@@ -46,14 +46,9 @@ struct ZenBalanceCard: View {
             )
             .frame(maxWidth: .infinity, alignment: .center)
 
-            VStack(alignment: .leading, spacing: 2) {
-                if let monthlyLimit = balance.monthlyLimitUSD {
-                    Text("Monthly limit: $\(Self.formatted(monthlyLimit))"
-                        + (balance.monthlyUsageUSD.map { " · used $\(Self.formatted($0))" } ?? ""))
-                        .font(TerminalTheme.Fonts.caption)
-                        .foregroundStyle(TerminalTheme.Colors.textSecondary)
-                }
-                Text(autoReloadText(balance))
+            if let monthlyLimit = balance.monthlyLimitUSD {
+                Text("Monthly limit: $\(Self.formatted(monthlyLimit))"
+                    + (balance.monthlyUsageUSD.map { " · used $\(Self.formatted($0))" } ?? ""))
                     .font(TerminalTheme.Fonts.caption)
                     .foregroundStyle(TerminalTheme.Colors.textSecondary)
             }
@@ -74,11 +69,6 @@ struct ZenBalanceCard: View {
         balance.currentUSD <= balance.autoReloadThresholdUSD
             ? TerminalTheme.Colors.warning
             : TerminalTheme.Colors.accent
-    }
-
-    private func autoReloadText(_ balance: ZenBalance) -> String {
-        guard balance.autoReloadEnabled else { return "Auto-reload: off" }
-        return "Auto-reload at $\(Self.formatted(balance.autoReloadThresholdUSD)) → +$\(Self.formatted(balance.autoReloadAmountUSD))"
     }
 
     private static func formatted(_ value: Double) -> String {
