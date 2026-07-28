@@ -27,7 +27,7 @@ targets:
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         CFBundleIconName: AppIcon
-        NSHumanReadableCopyright: "Copyright © 2026 Oleksandr S"
+        NSHumanReadableCopyright: "Copyright © 2026 OST Consultancy"
     entitlements:
       path: Dandelion/Dandelion.entitlements
       properties:
