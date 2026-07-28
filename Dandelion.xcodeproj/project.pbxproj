@@ -26,6 +26,7 @@
 		A609855C4796E330A8D6F51A /* RingGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FC8D657BE6C75ACDB232ACB /* RingGaugeView.swift */; };
 		B468B6227699EA6E073BAB01 /* ModelCatalogViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD2262C98E6BA4AAE3FA2EF7 /* ModelCatalogViewModel.swift */; };
 		C2F85C32D9FAE0D188360894 /* AuthDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */; };
+		C5B55CBBAB8B3FFF323203C3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1F815E92B652911639F9320A /* Assets.xcassets */; };
 		C9F4F17CABCA7EFB2D26EC19 /* ZenBalanceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2147BB94591BDE0E70B7D85 /* ZenBalanceCard.swift */; };
 		CAA9912AB8B718DCD74DBA25 /* TerminalTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6537974182E950BC2B7C054C /* TerminalTheme.swift */; };
 		D05D4B7F75AD9A83B21FCCAA /* KeyValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FF43C8218A69C6B10BA3BA /* KeyValidationService.swift */; };
@@ -38,6 +39,7 @@
 		0A5B6E84B3475DE146A33B76 /* GoUsageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoUsageViewModel.swift; sourceTree = "<group>"; };
 		0FC8D657BE6C75ACDB232ACB /* RingGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingGaugeView.swift; sourceTree = "<group>"; };
 		11D9AF622BACAAFEBD3C488A /* UsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageService.swift; sourceTree = "<group>"; };
+		1F815E92B652911639F9320A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthDiscoveryService.swift; sourceTree = "<group>"; };
 		3A0B65FE662895428D19727E /* DandelionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DandelionApp.swift; sourceTree = "<group>"; };
 		3B0FCBFC49F471DDCFE504F0 /* CookieOverrideStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieOverrideStore.swift; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 		545BDF88E749BF80BC724A73 /* Dandelion */ = {
 			isa = PBXGroup;
 			children = (
+				1F815E92B652911639F9320A /* Assets.xcassets */,
 				61AD50AFB201B43893A13D99 /* Dandelion.entitlements */,
 				45BB514A4704875592D111DF /* Info.plist */,
 				931DE8ECCAEBC2DCF5AECD24 /* App */,
@@ -180,6 +183,7 @@
 			buildConfigurationList = 5A9CCA6CC43702828D4C65CE /* Build configuration list for PBXNativeTarget "Dandelion" */;
 			buildPhases = (
 				7C73B50C86620BA928C5B021 /* Sources */,
+				F863A49B718D292F3A9E2B09 /* Resources */,
 				68CEFCDB9A66C0609E422E2A /* Frameworks */,
 			);
 			buildRules = (
@@ -222,6 +226,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F863A49B718D292F3A9E2B09 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C5B55CBBAB8B3FFF323203C3 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7C73B50C86620BA928C5B021 /* Sources */ = {

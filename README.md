@@ -66,16 +66,13 @@ open ~/Library/Developer/Xcode/DerivedData/Dandelion-*/Build/Products/Debug/Dand
 
 ## Installing locally (no Homebrew/Cask yet)
 
-There's no signed/notarized release or Cask published yet (`Casks/dandelion.rb` is a placeholder for that later step), so for now installing means building it yourself and copying the app out of Xcode's build output:
+There's no signed/notarized release or Cask published yet (`Casks/dandelion.rb` is a placeholder for that later step), so for now installing means building it yourself and copying the app out of Xcode's build output. The `install.sh` script wraps the whole flow:
 
 ```bash
-xcodegen generate
-xcodebuild -project Dandelion.xcodeproj -scheme Dandelion -configuration Release build
-cp -R ~/Library/Developer/Xcode/DerivedData/Dandelion-*/Build/Products/Release/Dandelion.app /Applications/
-open /Applications/Dandelion.app
+./install.sh
 ```
 
-Since this build isn't notarized, the first launch may need a right-click → **Open** (or an allow in System Settings → Privacy & Security → Security) to bypass Gatekeeper.
+This runs `xcodegen generate`, a Release build, copies `Dandelion.app` to `/Applications`, and opens it. Since this build isn't notarized, the first launch may need a right-click → **Open** (or an allow in System Settings → Privacy & Security → Security) to bypass Gatekeeper.
 
 ## License
 
