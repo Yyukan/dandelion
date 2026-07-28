@@ -64,7 +64,7 @@ struct ModelCatalogView: View {
                 Spacer()
 
                 Picker("Sort", selection: $viewModel.sortOption) {
-                    ForEach(CatalogSortOption.allCases) { option in
+                    ForEach(viewModel.availableSortOptions) { option in
                         Label(option.title, systemImage: option.systemImage).tag(option)
                     }
                 }

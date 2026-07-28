@@ -55,8 +55,22 @@ final class ModelCatalogViewModel {
     private(set) var isLoadingCatalog = false
 
     var searchText: String = ""
-    var providerFilter: CatalogProvider = .zen
+    var providerFilter: CatalogProvider = .zen {
+        didSet {
+            guard !availableSortOptions.contains(sortOption) else { return }
+            sortOption = .name
+        }
+    }
     var sortOption: CatalogSortOption = .name
+
+    /// Usage-limit sorting only makes sense for Go (Zen models never carry
+    /// `usageLimits`), so hide those options unless Go is the active filter.
+    var availableSortOptions: [CatalogSortOption] {
+        switch providerFilter {
+        case .zen: [.name, .priceAscending, .priceDescending]
+        case .go: CatalogSortOption.allCases
+        }
+    }
 
     private let authService: AuthDiscoveryService
     private let validationService: KeyValidationService
