@@ -100,10 +100,9 @@ struct SettingsView: View {
 
     private static func intervalLabel(_ interval: TimeInterval) -> String {
         switch interval {
-        case 30: "30 seconds"
-        case 60: "1 minute"
         case 300: "5 minutes"
-        case 900: "15 minutes"
+        case 1800: "30 minutes"
+        case 3600: "1 hour"
         default: "\(Int(interval))s"
         }
     }

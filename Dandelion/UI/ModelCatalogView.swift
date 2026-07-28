@@ -71,7 +71,7 @@ struct ModelCatalogView: View {
                 .pickerStyle(.menu)
                 .font(TerminalTheme.Fonts.caption)
                 .labelsHidden()
-                .frame(width: 130)
+                .frame(width: 150)
             }
         }
     }
@@ -133,6 +133,13 @@ private struct CatalogModelRow: View {
                 .font(TerminalTheme.Fonts.caption)
                 .foregroundStyle(TerminalTheme.Colors.textSecondary)
                 .lineLimit(1)
+
+            if let usageLine {
+                Text(usageLine)
+                    .font(TerminalTheme.Fonts.caption)
+                    .foregroundStyle(TerminalTheme.Colors.textTertiary)
+                    .lineLimit(1)
+            }
         }
         .padding(TerminalTheme.Spacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -149,21 +156,19 @@ private struct CatalogModelRow: View {
             return "\(Self.simplePrice(pricing.inputPerM)) · \(Self.simplePrice(pricing.outputPerM))"
         }
 
-        var parts: [String] = []
         if pricing.isFree {
-            parts.append("Free")
-        } else {
-            parts.append("In \(Self.price(pricing.inputPerM))")
-            parts.append("Out \(Self.price(pricing.outputPerM))")
-            if let cacheRead = pricing.cacheReadPerM {
-                parts.append("CacheR \(Self.price(cacheRead))")
-            }
-            if let cacheWrite = pricing.cacheWritePerM {
-                parts.append("CacheW \(Self.price(cacheWrite))")
-            }
+            return "Free"
         }
-        parts.append("Ctx \(Self.tokens(model.limit.contextTokens))")
-        return parts.joined(separator: " · ")
+        return "In \(Self.price(pricing.inputPerM)) · Out \(Self.price(pricing.outputPerM))"
+    }
+
+    /// Go-only second line: estimated requests per 5h / week / month, from
+    /// OpenCode's docs usage-limits table. `nil` for Zen or when a Go model
+    /// isn't covered by that table.
+    private var usageLine: String? {
+        guard model.provider == .go, let usageLimits = model.usageLimits else { return nil }
+        return "5h \(Self.count(usageLimits.requestsPer5h)) · Week \(Self.count(usageLimits.requestsPerWeek))"
+            + " · Month \(Self.count(usageLimits.requestsPerMonth))"
     }
 
     private static func price(_ value: Double) -> String {
@@ -174,11 +179,9 @@ private struct CatalogModelRow: View {
         "$" + String(format: "%.2f", value)
     }
 
-    private static func tokens(_ value: Int) -> String {
-        if value >= 1_000_000 {
-            return String(format: "%.1fM", Double(value) / 1_000_000)
-        } else if value >= 1_000 {
-            return String(format: "%.0fK", Double(value) / 1_000)
+    private static func count(_ value: Int) -> String {
+        if value >= 1_000 {
+            return String(format: "%.1fK", Double(value) / 1_000)
         }
         return "\(value)"
     }

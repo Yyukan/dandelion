@@ -23,23 +23,26 @@ enum CatalogSortOption: String, CaseIterable, Identifiable, Sendable {
     case name = "Name"
     case priceAscending = "Price ascending"
     case priceDescending = "Price descending"
+    case usageLimitAscending = "Usage limit ascending"
+    case usageLimitDescending = "Usage limit descending"
 
     var id: String { rawValue }
 
-    /// Text shown in the sort picker; price options share the same title and
-    /// are distinguished by their `systemImage` arrow glyph.
+    /// Text shown in the sort picker; ascending/descending pairs share the
+    /// same title and are distinguished by their `systemImage` arrow glyph.
     var title: String {
         switch self {
         case .name: "Name"
         case .priceAscending, .priceDescending: "Price"
+        case .usageLimitAscending, .usageLimitDescending: "Usage limit"
         }
     }
 
     var systemImage: String {
         switch self {
         case .name: "textformat"
-        case .priceAscending: "arrow.up"
-        case .priceDescending: "arrow.down"
+        case .priceAscending, .usageLimitAscending: "arrow.up"
+        case .priceDescending, .usageLimitDescending: "arrow.down"
         }
     }
 }
@@ -86,6 +89,10 @@ final class ModelCatalogViewModel {
             result.sort { $0.pricing.inputPerM < $1.pricing.inputPerM }
         case .priceDescending:
             result.sort { $0.pricing.inputPerM > $1.pricing.inputPerM }
+        case .usageLimitAscending:
+            result.sort { ($0.usageLimits?.requestsPerMonth ?? 0) < ($1.usageLimits?.requestsPerMonth ?? 0) }
+        case .usageLimitDescending:
+            result.sort { ($0.usageLimits?.requestsPerMonth ?? 0) > ($1.usageLimits?.requestsPerMonth ?? 0) }
         }
 
         return result

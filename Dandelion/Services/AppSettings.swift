@@ -19,8 +19,8 @@ final class AppSettings {
         static let manualWorkspaceID = "manualWorkspaceID"
     }
 
-    /// Selectable auto-refresh cadences, in seconds.
-    static let availableIntervals: [TimeInterval] = [30, 60, 300, 900]
+    /// Selectable auto-refresh cadences, in seconds: 5 minutes, 30 minutes, 1 hour.
+    static let availableIntervals: [TimeInterval] = [300, 1800, 3600]
 
     private let defaults: UserDefaults
 

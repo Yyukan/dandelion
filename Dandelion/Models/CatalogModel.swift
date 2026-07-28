@@ -35,6 +35,17 @@ struct ModelLimit: Codable, Sendable, Hashable {
     let outputTokens: Int
 }
 
+/// Estimated Go usage-window request counts for a model, as published on
+/// OpenCode's `/docs/go` page (5h/weekly/monthly limits are dollar-value
+/// based, so the request count depends on the model's own price - this is
+/// the docs' own per-model estimate). Not available via any API, so it's
+/// maintained as a static table in `ModelCatalogService`.
+struct GoUsageLimits: Codable, Sendable, Hashable {
+    let requestsPer5h: Int
+    let requestsPerWeek: Int
+    let requestsPerMonth: Int
+}
+
 /// Which OpenCode surface a catalog model belongs to.
 enum CatalogProvider: String, Codable, Sendable, CaseIterable, Identifiable {
     case zen
@@ -61,6 +72,8 @@ struct CatalogModel: Codable, Sendable, Hashable, Identifiable {
     let provider: CatalogProvider
     let pricing: ModelPricing
     let limit: ModelLimit
+    /// Go-only estimated usage-window request counts; always `nil` for Zen.
+    var usageLimits: GoUsageLimits?
 
     var id: String { "\(provider.rawValue):\(modelID)" }
 }
