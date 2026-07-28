@@ -36,7 +36,7 @@ final class ModelCatalogViewModel {
     private(set) var isLoadingCatalog = false
 
     var searchText: String = ""
-    var providerFilter: CatalogProvider?
+    var providerFilter: CatalogProvider = .zen
     var sortOption: CatalogSortOption = .name
 
     private let authService: AuthDiscoveryService
@@ -54,11 +54,8 @@ final class ModelCatalogViewModel {
     }
 
     var filteredModels: [CatalogModel] {
-        var result = models
+        var result = models.filter { $0.provider == providerFilter }
 
-        if let providerFilter {
-            result = result.filter { $0.provider == providerFilter }
-        }
         if !searchText.isEmpty {
             result = result.filter {
                 $0.displayName.localizedCaseInsensitiveContains(searchText)

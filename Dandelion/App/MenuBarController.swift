@@ -32,19 +32,18 @@ final class MenuBarController: NSObject {
     )
 
     func start() {
-        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = item.button {
             button.image = NSImage(
                 systemSymbolName: "circle.hexagongrid.circle",
                 accessibilityDescription: "Dandelion"
             )
-            button.imagePosition = .imageLeading
+            button.imagePosition = .imageOnly
             button.target = self
             button.action = #selector(togglePanel(_:))
         }
         statusItem = item
 
-        observeSummaryUpdates()
         Task { await refreshCoordinator.refreshNow() }
     }
 
@@ -153,36 +152,5 @@ final class MenuBarController: NSObject {
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         return window
-    }
-
-    // MARK: Status bar summary label
-
-    /// Re-registers itself on every change so the summary label always
-    /// reflects the latest refreshed Zen/Go values, whether the update came
-    /// from the panel's manual Refresh button or the auto-refresh timer.
-    private func observeSummaryUpdates() {
-        withObservationTracking {
-            _ = zenBalanceViewModel.state
-            _ = goUsageViewModel.state
-        } onChange: { [weak self] in
-            Task { @MainActor in
-                self?.updateStatusItemTitle()
-                self?.observeSummaryUpdates()
-            }
-        }
-        updateStatusItemTitle()
-    }
-
-    private func updateStatusItemTitle() {
-        guard let button = statusItem?.button else { return }
-
-        var parts: [String] = []
-        if case .loaded(let balance) = zenBalanceViewModel.state {
-            parts.append("Zen $" + String(format: "%.2f", balance.currentUSD))
-        }
-        if case .loaded(let usage) = goUsageViewModel.state {
-            parts.append("Go \(Int(usage.rolling5h.usedPercent))%")
-        }
-        button.title = parts.isEmpty ? "" : " " + parts.joined(separator: " · ")
     }
 }

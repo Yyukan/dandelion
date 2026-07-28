@@ -25,25 +25,13 @@ struct ModelCatalogView: View {
                 }
             case .disconnected:
                 DisconnectedStateView()
-            case .connected(let zenValid, let goValid):
-                connectionSummary(zenValid: zenValid, goValid: goValid)
+            case .connected:
                 controls
                 catalogList
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task { await viewModel.loadInitial() }
-    }
-
-    private func connectionSummary(zenValid: Bool?, goValid: Bool?) -> some View {
-        HStack(spacing: TerminalTheme.Spacing.md) {
-            CredentialBadge(label: "Zen", state: zenValid)
-            CredentialBadge(label: "Go", state: goValid)
-            Spacer()
-            if viewModel.isLoadingCatalog {
-                ProgressView().controlSize(.mini)
-            }
-        }
     }
 
     private var controls: some View {
@@ -55,6 +43,9 @@ struct ModelCatalogView: View {
                 TextField("Search models…", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .font(TerminalTheme.Fonts.body)
+                if viewModel.isLoadingCatalog {
+                    ProgressView().controlSize(.mini)
+                }
             }
             .padding(.horizontal, TerminalTheme.Spacing.sm)
             .padding(.vertical, 6)
@@ -63,9 +54,8 @@ struct ModelCatalogView: View {
 
             HStack {
                 Picker("Provider", selection: $viewModel.providerFilter) {
-                    Text("All").tag(CatalogProvider?.none)
                     ForEach(CatalogProvider.allCases) { provider in
-                        Text(provider.displayName).tag(CatalogProvider?.some(provider))
+                        Text(provider.displayName).tag(provider)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -101,32 +91,6 @@ struct ModelCatalogView: View {
             }
         }
         .frame(maxHeight: 220)
-    }
-}
-
-/// A small pill showing whether a credential was found/validated for one surface.
-private struct CredentialBadge: View {
-    let label: String
-    /// `nil` while validation is still in flight.
-    let state: Bool?
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Circle()
-                .fill(color)
-                .frame(width: 6, height: 6)
-            Text(label)
-                .font(TerminalTheme.Fonts.caption)
-                .foregroundStyle(TerminalTheme.Colors.textSecondary)
-        }
-    }
-
-    private var color: Color {
-        switch state {
-        case .some(true): TerminalTheme.Colors.accent
-        case .some(false): TerminalTheme.Colors.danger
-        case .none: TerminalTheme.Colors.textTertiary
-        }
     }
 }
 

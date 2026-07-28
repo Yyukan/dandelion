@@ -2,7 +2,7 @@
 //  TerminalTheme.swift
 //  Dandelion
 //
-//  Fixed dark, monospace, teal-accent design tokens for the status panel.
+//  Fixed dark, monospace, azure-accent design tokens for the status panel.
 //  Intentionally not adaptive to system light/dark mode.
 //
 
@@ -14,13 +14,13 @@ enum TerminalTheme {
     // MARK: Colors
 
     enum Colors {
-        static let background = Color(red: 0.043, green: 0.055, blue: 0.059)
-        static let surface = Color(red: 0.075, green: 0.094, blue: 0.098)
-        static let surfaceElevated = Color(red: 0.106, green: 0.129, blue: 0.133)
+        static let background = Color(red: 0.043, green: 0.051, blue: 0.067)
+        static let surface = Color(red: 0.071, green: 0.082, blue: 0.106)
+        static let surfaceElevated = Color(red: 0.098, green: 0.112, blue: 0.145)
         static let border = Color.white.opacity(0.08)
 
-        static let accent = Color(red: 0.235, green: 0.827, blue: 0.741) // teal/mint
-        static let accentDim = Color(red: 0.235, green: 0.827, blue: 0.741).opacity(0.35)
+        static let accent = Color(red: 0.310, green: 0.635, blue: 0.980) // azure blue
+        static let accentDim = Color(red: 0.310, green: 0.635, blue: 0.980).opacity(0.35)
 
         static let textPrimary = Color(white: 0.94)
         static let textSecondary = Color(white: 0.62)

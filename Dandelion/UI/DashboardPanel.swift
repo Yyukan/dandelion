@@ -24,9 +24,6 @@ struct DashboardPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            header
-            Divider().overlay(TerminalTheme.Colors.border)
-
             VStack(spacing: TerminalTheme.Spacing.md) {
                 CardContainer {
                     ZenBalanceCard(viewModel: zenBalanceViewModel)
@@ -36,10 +33,7 @@ struct DashboardPanel: View {
                     GoUsageCard(viewModel: goUsageViewModel)
                 }
 
-                PlaceholderCard(
-                    title: "Model Catalog",
-                    subtitle: "Zen + Go models, pricing and limits"
-                ) {
+                CardContainer {
                     ModelCatalogView(viewModel: catalogViewModel)
                 }
             }
@@ -53,29 +47,16 @@ struct DashboardPanel: View {
         .foregroundStyle(TerminalTheme.Colors.textPrimary)
     }
 
-    private var header: some View {
-        HStack {
-            Circle()
-                .fill(TerminalTheme.Colors.accent)
-                .frame(width: 8, height: 8)
-            Text("Dandelion")
-                .font(TerminalTheme.Fonts.title)
-            Spacer()
-            Text("Zen · Go")
-                .font(TerminalTheme.Fonts.caption)
-                .foregroundStyle(TerminalTheme.Colors.textTertiary)
-        }
-        .padding(TerminalTheme.Spacing.lg)
-    }
-
     private var footer: some View {
-        HStack(spacing: TerminalTheme.Spacing.sm) {
+        HStack {
             FooterButton(title: "Refresh", systemImage: "arrow.clockwise") {
                 Task { await refreshCoordinator.refreshNow() }
             }
 
+            Spacer()
+
             FooterButton(
-                title: appSettings.autoRefreshEnabled ? "Auto: On" : "Auto: Off",
+                title: appSettings.autoRefreshEnabled ? "Auto Refresh: On" : "Auto Refresh: Off",
                 systemImage: "timer",
                 isActive: appSettings.autoRefreshEnabled
             ) {
@@ -85,45 +66,18 @@ struct DashboardPanel: View {
             Spacer()
 
             FooterButton(title: "Settings", systemImage: "gearshape", action: onOpenSettings)
+
+            Spacer()
+
             FooterButton(title: "Quit", systemImage: "power", action: onQuit)
         }
         .padding(TerminalTheme.Spacing.md)
     }
 }
 
-/// A generic dark card container used for each dashboard section.
-private struct PlaceholderCard<Content: View>: View {
-    let title: String
-    let subtitle: String
-    @ViewBuilder var content: () -> Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: TerminalTheme.Spacing.sm) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(TerminalTheme.Fonts.heading)
-                    .foregroundStyle(TerminalTheme.Colors.textPrimary)
-                Text(subtitle)
-                    .font(TerminalTheme.Fonts.caption)
-                    .foregroundStyle(TerminalTheme.Colors.textTertiary)
-            }
-
-            content()
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .padding(TerminalTheme.Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(TerminalTheme.Colors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: TerminalTheme.Metrics.cardCornerRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: TerminalTheme.Metrics.cardCornerRadius)
-                .stroke(TerminalTheme.Colors.border, lineWidth: 1)
-        )
-    }
-}
-
-/// A plain dark card container for sections (like `ZenBalanceCard`) that
-/// render their own title/subtitle, so it skips `PlaceholderCard`'s fixed header.
+/// A dark card container used for each dashboard section; sections render
+/// their own title/subtitle (or none, like the model catalog), so this
+/// intentionally has no fixed header of its own.
 private struct CardContainer<Content: View>: View {
     @ViewBuilder var content: () -> Content
 
@@ -140,7 +94,7 @@ private struct CardContainer<Content: View>: View {
     }
 }
 
-/// A small monospace footer action button with a hover-friendly tap target.
+/// An icon-only monospace footer action button with a hover-friendly tap target.
 private struct FooterButton: View {
     let title: String
     let systemImage: String
@@ -151,18 +105,15 @@ private struct FooterButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 4) {
-                Image(systemName: systemImage)
-                Text(title)
-            }
-            .font(TerminalTheme.Fonts.caption)
-            .foregroundStyle(isActive ? TerminalTheme.Colors.accent : TerminalTheme.Colors.textSecondary)
-            .padding(.horizontal, TerminalTheme.Spacing.sm)
-            .padding(.vertical, 6)
-            .background(isHovering ? TerminalTheme.Colors.surfaceElevated : .clear)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            Image(systemName: systemImage)
+                .font(TerminalTheme.Fonts.body)
+                .foregroundStyle(isActive ? TerminalTheme.Colors.accent : TerminalTheme.Colors.textSecondary)
+                .frame(width: 30, height: 26)
+                .background(isHovering ? TerminalTheme.Colors.surfaceElevated : .clear)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
+        .help(title)
         .onHover { isHovering = $0 }
     }
 }
