@@ -7,7 +7,7 @@ A native macOS menu bar app for **OpenCode Zen** (pay-as-you-go) and **OpenCode 
 
 ## Purpose
 
-[opencode-bar](https://github.com/opgginc/opencode-bar) covers many AI providers from the CLI/menu bar, but Dandelion narrows the scope on purpose: it's a **Zen/Go-only**, fully graphical dashboard, styled as a custom dark/monospace/teal "terminal" panel instead of a plain `NSMenu` dropdown. It answers three questions without opening a browser:
+Dandelion is a **Zen/Go-only**, fully graphical dashboard, styled as a custom dark/monospace/teal "terminal" panel instead of a plain `NSMenu` dropdown. It answers three questions without opening a browser:
 
 - How much is left in my Zen balance, and what's my auto-reload threshold / monthly limit?
 - How much of my Go 5h/weekly/monthly usage window have I used, and when does it reset?
@@ -27,17 +27,6 @@ Floating panel (NSPanel, custom SwiftUI content)
         ├── Model Catalog View  │        + auto-refresh timer + manual Refresh
         └── Settings ───────────┘
 ```
-
-Data services, each with a single responsibility:
-
-| Service | Responsibility |
-|---|---|
-| `AuthDiscoveryService` | Reads `~/.local/share/opencode/auth.json` (or `OPENCODE_AUTH_JSON`) to auto-detect the Zen/Go API keys - no manual key entry. |
-| `KeyValidationService` | Confirms a key is valid with a **zero-cost**, 1-token completion call against a free model (never a paid one, never `/v1/models` - that endpoint accepts any key). |
-| `ModelCatalogService` | Fetches `https://models.dev/api.json`, maps the `opencode`/`opencode-go` blocks into priced/limited `CatalogModel`s, caches locally, refreshes daily. |
-| `CookieDiscoveryService` | Auto-discovers the `opencode.ai` session cookie from Safari/Chromium browser cookie jars (Keychain-protected), with a manual override fallback in Settings. |
-| `UsageService` | Calls OpenCode's private, undocumented dashboard endpoints (using the discovered cookie) for the live Zen balance and Go usage windows. |
-| `RefreshCoordinator` | Runs all of the above in parallel via `TaskGroup`; drives manual refresh and the auto-refresh timer. |
 
 Because the live balance/usage endpoints are undocumented and can change without notice, every widget degrades gracefully to a "—" + *Open Console* fallback instead of crashing when discovery or parsing fails.
 
