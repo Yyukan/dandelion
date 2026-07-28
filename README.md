@@ -7,7 +7,7 @@ A native macOS menu bar app for **OpenCode Zen** (pay-as-you-go) and **OpenCode 
 
 ## Purpose
 
-Dandelion is a **Zen/Go-only**, fully graphical dashboard, styled as a custom dark/monospace/teal "terminal" panel instead of a plain `NSMenu` dropdown. It answers three questions without opening a browser:
+Dandelion is a **Zen/Go-only**, fully graphical dashboard, styled as a custom dark/monospace/teal "terminal" panel instead of a plain dropdown. It answers three questions without opening a browser:
 
 - How much is left in my Zen balance, and what's my auto-reload threshold / monthly limit?
 - How much of my Go 5h/weekly/monthly usage window have I used, and when does it reset?
@@ -15,29 +15,27 @@ Dandelion is a **Zen/Go-only**, fully graphical dashboard, styled as a custom da
 
 ## Architecture
 
-Dandelion is a Swift 6 / SwiftUI, menu-bar-only app (`LSUIElement`, no Dock icon, no CLI target).
+Dandelion is a Swift / SwiftUI, menu-bar-only app (no Dock icon, no CLI target).
 
 ```
-Status bar icon (NSStatusItem)
+Status bar icon 
         │ click
         ▼
-Floating panel (NSPanel, custom SwiftUI content)
-        ├── Zen Balance Card   ──┐
-        ├── Go Usage Card       ├── RefreshCoordinator (TaskGroup, parallel fetch)
-        ├── Model Catalog View  │        + auto-refresh timer + manual Refresh
+Floating panel (custom content)
+        ├── Zen Balance Card  ──┐
+        ├── Go Usage Card       ├── refresh coordinator (parallel fetch)
+        ├── Model Catalog View  │        + auto-refresh timer + manual refresh
         └── Settings ───────────┘
 ```
 
-Because the live balance/usage endpoints are undocumented and can change without notice, every widget degrades gracefully to a "—" + *Open Console* fallback instead of crashing when discovery or parsing fails.
-
-Design tokens (colors, monospace font, spacing) live in `Theme/TerminalTheme.swift`; the reusable ring gauge is `UI/RingGaugeView.swift`.
+Because the live balance/usage endpoints are undocumented and can change without notice, every widget degrades gracefully to a "—" fallback instead of crashing when discovery or parsing fails.
 
 ## Requirements
 
 - macOS 26 ("Tahoe") or later
 - Xcode 26+ (full IDE, not just Command Line Tools)
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) to generate the `.xcodeproj` from `project.yml` (`brew install xcodegen`)
-- An OpenCode account already connected on this machine (i.e. `~/.local/share/opencode/auth.json` exists - run `/connect` in OpenCode if it doesn't)
+- An OpenCode account already connected on this machine (i.e. `~/.local/share/opencode/auth.json`)
 
 ## Running locally
 
@@ -50,7 +48,7 @@ xcodegen generate
 open Dandelion.xcodeproj
 ```
 
-Then in Xcode: select the **Dandelion** scheme and press **Run** (⌘R). The app has `LSUIElement` set, so it won't show a Dock icon or a window - look for its icon in the menu bar and click it to open the panel.
+Then in Xcode: select the **Dandelion** scheme and press **Run** (⌘R). 
 
 You can also build/run from the terminal instead of the Xcode UI:
 
@@ -62,7 +60,7 @@ open ~/Library/Developer/Xcode/DerivedData/Dandelion-*/Build/Products/Debug/Dand
 ### First-run permissions
 
 - **Zen/Go catalog and key validation** work immediately as long as `auth.json` has your keys - no extra permission prompts.
-- **Live Zen balance / Go usage** additionally need read access to your browser's cookie store: Chromium-based browsers (Chrome/Brave/Arc/Edge) prompt for Keychain access to decrypt cookies; Safari's cookie store requires granting the app **Full Disk Access** in System Settings → Privacy & Security. If discovery fails or is denied, use the manual cookie/workspace override field in Settings instead.
+- **Live Zen balance / Go usage** additionally need read access to your browser's cookie store: Chromium-based browsers (Chrome/Brave/Arc/Edge) prompt for Keychain access to decrypt cookies. 
 
 ## Installing locally (no Homebrew/Cask yet)
 
