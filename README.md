@@ -13,6 +13,8 @@ Dandelion is a **Zen/Go-only**, fully graphical dashboard, styled as a custom da
 - How much of my Go 5h/weekly/monthly usage window have I used, and when does it reset?
 - What do all Zen/Go models cost (input/output/cache read/cache write per 1M tokens) and what are their context/output limits?
 
+![Dandelion demo](assets/demo.png)
+
 ## Architecture
 
 Dandelion is a Swift / SwiftUI, menu-bar-only app (no Dock icon, no CLI target).
