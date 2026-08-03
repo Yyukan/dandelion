@@ -25,7 +25,7 @@ struct ZenBalanceCard: View {
 
             switch viewModel.state {
             case .loading:
-                RingGaugeView(progress: 0, valueText: "—", label: "Balance")
+                RingGaugeView(progress: 0, valueText: "—", label: "Balance", lineWidth: 3)
                     .frame(maxWidth: .infinity, alignment: .center)
             case .loaded(let balance):
                 loadedContent(balance)
@@ -44,7 +44,8 @@ struct ZenBalanceCard: View {
                 progress: progress(for: balance),
                 valueText: "$" + String(format: "%.2f", balance.currentUSD),
                 label: "Balance",
-                tint: ringTint(for: balance)
+                tint: ringTint(for: balance),
+                lineWidth: 3
             )
             .frame(maxWidth: .infinity, alignment: .center)
 
@@ -84,7 +85,7 @@ private struct UnavailableStateView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: TerminalTheme.Spacing.xs) {
             HStack(spacing: TerminalTheme.Spacing.sm) {
-                RingGaugeView(progress: 0, valueText: "—", label: "Balance", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 6)
+                RingGaugeView(progress: 0, valueText: "—", label: "Balance", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 3)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Balance unavailable")
                         .font(TerminalTheme.Fonts.body.weight(.semibold))
@@ -107,7 +108,7 @@ private struct SessionExpiredStateView: View {
 
     var body: some View {
         HStack(spacing: TerminalTheme.Spacing.sm) {
-            RingGaugeView(progress: 0, valueText: "—", label: "Balance", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 6)
+            RingGaugeView(progress: 0, valueText: "—", label: "Balance", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 3)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Session expired")
                     .font(TerminalTheme.Fonts.body.weight(.semibold))

@@ -39,9 +39,9 @@ struct GoUsageCard: View {
 
     private var loadingRings: some View {
         HStack(spacing: TerminalTheme.Spacing.lg) {
-            RingGaugeView(progress: 0, valueText: "—", label: "5h", size: 72, lineWidth: 6)
-            RingGaugeView(progress: 0, valueText: "—", label: "Weekly", size: 72, lineWidth: 6)
-            RingGaugeView(progress: 0, valueText: "—", label: "Monthly", size: 72, lineWidth: 6)
+            RingGaugeView(progress: 0, valueText: "—", label: "5h", size: 72, lineWidth: 3)
+            RingGaugeView(progress: 0, valueText: "—", label: "Weekly", size: 72, lineWidth: 3)
+            RingGaugeView(progress: 0, valueText: "—", label: "Monthly", size: 72, lineWidth: 3)
         }
         .frame(maxWidth: .infinity, alignment: .center)
     }
@@ -71,7 +71,7 @@ struct GoUsageCard: View {
                 label: window.label,
                 tint: window.isHealthy ? TerminalTheme.Colors.accent : TerminalTheme.Colors.danger,
                 size: 72,
-                lineWidth: 6
+                lineWidth: 3
             )
             Text(Self.countdownText(window.resetsIn))
                 .font(TerminalTheme.Fonts.caption)
@@ -98,7 +98,7 @@ struct GoUsageCard: View {
 private struct UnavailableStateView: View {
     var body: some View {
         HStack(spacing: TerminalTheme.Spacing.sm) {
-            RingGaugeView(progress: 0, valueText: "—", label: "Usage", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 6)
+            RingGaugeView(progress: 0, valueText: "—", label: "Usage", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 3)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Usage unavailable")
                     .font(TerminalTheme.Fonts.body.weight(.semibold))
@@ -120,7 +120,7 @@ private struct SessionExpiredStateView: View {
 
     var body: some View {
         HStack(spacing: TerminalTheme.Spacing.sm) {
-            RingGaugeView(progress: 0, valueText: "—", label: "Usage", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 6)
+            RingGaugeView(progress: 0, valueText: "—", label: "Usage", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 3)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Session expired")
                     .font(TerminalTheme.Fonts.body.weight(.semibold))
