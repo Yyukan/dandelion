@@ -13,7 +13,9 @@ Dandelion is a **Zen/Go-only**, fully graphical dashboard, styled as a custom da
 - How much of my Go 5h/weekly/monthly usage window have I used, and when does it reset?
 - What do all Zen/Go models cost (input/output/cache read/cache write per 1M tokens) and what are their context/output limits?
 
-![Dandelion demo](assets/demo.png)
+<p align="center">
+  <img src="assets/demo.png" alt="Dandelion demo" width="480">
+</p>
 
 ## Architecture
 
@@ -64,15 +66,36 @@ open ~/Library/Developer/Xcode/DerivedData/Dandelion-*/Build/Products/Debug/Dand
 - **Zen/Go catalog and key validation** work immediately as long as `auth.json` has your keys - no extra permission prompts.
 - **Live Zen balance / Go usage** additionally need read access to your browser's cookie store: Chromium-based browsers (Chrome/Brave/Arc/Edge) prompt for Keychain access to decrypt cookies. 
 
-## Installing locally (no Homebrew/Cask yet)
+## Installing
 
-There's no signed/notarized release or Cask published yet (`Casks/dandelion.rb` is a placeholder for that later step), so for now installing means building it yourself and copying the app out of Xcode's build output. The `install.sh` script wraps the whole flow:
+### Via Homebrew
+
+```bash
+brew tap Yyukan/dandelion https://github.com/Yyukan/dandelion
+brew install --cask dandelion
+```
+
+This drops a prebuilt `Dandelion.app` straight into `/Applications` - no Xcode required. Since the build isn't notarized, the first launch still needs a right-click → **Open** (or an allow in System Settings → Privacy & Security → Security) to bypass Gatekeeper.
+
+### From source
+
+Building it yourself and copying the app out of Xcode's build output. The `install.sh` script wraps the whole flow:
 
 ```bash
 ./install.sh
 ```
 
-This runs `xcodegen generate`, a Release build, copies `Dandelion.app` to `/Applications`, and opens it. Since this build isn't notarized, the first launch may need a right-click → **Open** (or an allow in System Settings → Privacy & Security → Security) to bypass Gatekeeper.
+This runs `xcodegen generate`, a Release build, copies `Dandelion.app` to `/Applications`, and opens it.
+
+### Cutting a release (maintainers)
+
+`release.sh` builds a Release configuration, zips `Dandelion.app` into `Dandelion.zip`, and prints its sha256:
+
+```bash
+./release.sh
+```
+
+Attach the resulting `Dandelion.zip` to a GitHub Release tagged to match the `version` in `Casks/dandelion.rb`, then replace that Cask's `sha256` with the printed hash.
 
 ## License
 

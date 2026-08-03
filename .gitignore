@@ -16,6 +16,9 @@ xcuserdata/
 *.dSYM.zip
 *.dSYM
 
+# release.sh output (uploaded to GitHub Releases, not committed)
+/Dandelion.zip
+
 ## Playgrounds
 timeline.xctimeline
 playground.xcworkspace
