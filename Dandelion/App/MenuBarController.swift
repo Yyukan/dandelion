@@ -99,7 +99,7 @@ final class MenuBarController: NSObject {
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hidesOnDeactivate = false
-        panel.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        panel.collectionBehavior = [.moveToActiveSpace, .stationary]
         return panel
     }
 
