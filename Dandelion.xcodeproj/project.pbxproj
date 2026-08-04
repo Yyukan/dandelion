@@ -25,7 +25,6 @@
 		9FD4D326A72E00A78B2C79E0 /* CookieDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3834C36B0F80DEFCED5D226 /* CookieDiscoveryService.swift */; };
 		A609855C4796E330A8D6F51A /* RingGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FC8D657BE6C75ACDB232ACB /* RingGaugeView.swift */; };
 		B468B6227699EA6E073BAB01 /* ModelCatalogViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD2262C98E6BA4AAE3FA2EF7 /* ModelCatalogViewModel.swift */; };
-		1A2B3C4D5E6F7A8B9C0D1E2F /* ModelVendor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3B4C5D6E7F8A9B0C1D2E3F /* ModelVendor.swift */; };
 		C2F85C32D9FAE0D188360894 /* AuthDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */; };
 		C5B55CBBAB8B3FFF323203C3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1F815E92B652911639F9320A /* Assets.xcassets */; };
 		C9F4F17CABCA7EFB2D26EC19 /* ZenBalanceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2147BB94591BDE0E70B7D85 /* ZenBalanceCard.swift */; };
@@ -33,9 +32,11 @@
 		D05D4B7F75AD9A83B21FCCAA /* KeyValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FF43C8218A69C6B10BA3BA /* KeyValidationService.swift */; };
 		E4D08B353924FDF08B886385 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4164C386CD52D532547A2394 /* libsqlite3.tbd */; };
 		E6E1BD19248D19055267CA23 /* CatalogModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E7DC803AC43CE91B72F6F4 /* CatalogModel.swift */; };
+		FCA12BC49488AB0EA42DB7A5 /* ModelVendor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042D11FD2C0E98501A41CB19 /* ModelVendor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		042D11FD2C0E98501A41CB19 /* ModelVendor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelVendor.swift; sourceTree = "<group>"; };
 		098F4862742BEB075A0DB065 /* Dandelion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dandelion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A5B6E84B3475DE146A33B76 /* GoUsageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoUsageViewModel.swift; sourceTree = "<group>"; };
 		0FC8D657BE6C75ACDB232ACB /* RingGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingGaugeView.swift; sourceTree = "<group>"; };
@@ -64,7 +65,6 @@
 		CD2262C98E6BA4AAE3FA2EF7 /* ModelCatalogViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalogViewModel.swift; sourceTree = "<group>"; };
 		E36C8BA2D7D6D69954B99F30 /* ModelCatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalogView.swift; sourceTree = "<group>"; };
 		FFCDF56133A5E949D92164B1 /* ModelCatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalogService.swift; sourceTree = "<group>"; };
-		2A3B4C5D6E7F8A9B0C1D2E3F /* ModelVendor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelVendor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,7 +132,7 @@
 			children = (
 				52E7DC803AC43CE91B72F6F4 /* CatalogModel.swift */,
 				7EF60F0279BFCFFDF2CBA509 /* GoUsageWindow.swift */,
-				2A3B4C5D6E7F8A9B0C1D2E3F /* ModelVendor.swift */,
+				042D11FD2C0E98501A41CB19 /* ModelVendor.swift */,
 				80861F8A42DCA93569D7E984 /* ZenBalance.swift */,
 			);
 			path = Models;
@@ -261,7 +261,7 @@
 				72F3EA67091C54B2F7FC56C6 /* ModelCatalogService.swift in Sources */,
 				9E09A1C1B64DF996105D970A /* ModelCatalogView.swift in Sources */,
 				B468B6227699EA6E073BAB01 /* ModelCatalogViewModel.swift in Sources */,
-				1A2B3C4D5E6F7A8B9C0D1E2F /* ModelVendor.swift in Sources */,
+				FCA12BC49488AB0EA42DB7A5 /* ModelVendor.swift in Sources */,
 				0308DD36E92B8BA552FDBB55 /* RefreshCoordinator.swift in Sources */,
 				A609855C4796E330A8D6F51A /* RingGaugeView.swift in Sources */,
 				68A5E64A0387EC5C657687AA /* SettingsView.swift in Sources */,
@@ -405,7 +405,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Dandelion/Dandelion.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Dandelion/Info.plist;
@@ -414,7 +414,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = nl.ostconsultancy.Dandelion;
 				PRODUCT_NAME = Dandelion;
 				SDKROOT = macosx;
@@ -428,7 +428,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Dandelion/Dandelion.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Dandelion/Info.plist;
@@ -437,7 +437,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = nl.ostconsultancy.Dandelion;
 				PRODUCT_NAME = Dandelion;
 				SDKROOT = macosx;
