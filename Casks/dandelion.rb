@@ -1,6 +1,6 @@
 cask "dandelion" do
   version "0.2.0"
-  sha256 :no_check # TODO: replaced with the real sha256 after ./release.sh runs for this version
+  sha256 "5a2cb763098d13ac90f28582f67ccb7793aae6d293a19359d2ed010e98d38901"
 
   url "https://github.com/Yyukan/dandelion/releases/download/v#{version}/Dandelion.zip"
   name "Dandelion"
