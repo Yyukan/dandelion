@@ -115,11 +115,15 @@ actor UsageService {
         )
     }
 
-    /// Parses one `<key>:{status:"...",resetInSec:N,usagePercent:N}` block
+    /// Parses one `<key>:{status:"...",resetInSec:N,usagePercent:N,...}` block
     /// (the object literal is sometimes wrapped in a `$R[n]=` resumability
     /// assignment, which this pattern tolerates but doesn't require).
+    /// `usagePercent` may be an integer (older dashboard) or a float
+    /// (e.g. `0.5` — newer dashboard), so it matches `[\d.]+`.
+    /// The dashboard has also added extra fields after `usagePercent`
+    /// (`usage:N,limit:N`), so the pattern accepts any content up to `}`.
     private static func parseUsageWindow(key: String, label: String, in html: String) -> GoUsageWindow? {
-        let pattern = #"\#(key):(?:\$R\[\d+\]=)?\{status:"(\w+)",resetInSec:(\d+),usagePercent:(\d+)\}"#
+        let pattern = #"\#(key):(?:\$R\[\d+\]=)?\{status:"(\w+)",resetInSec:(\d+),usagePercent:([\d.]+)(?:,.*?)?\}"#
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
         let range = NSRange(html.startIndex..., in: html)
         guard let match = regex.firstMatch(in: html, range: range), match.numberOfRanges == 4 else { return nil }

@@ -22,6 +22,10 @@ struct RingGaugeView: View {
     var size: CGFloat = 96
     /// Ring stroke width.
     var lineWidth: CGFloat = 8
+    /// Font used for the value text in the centre of the ring. Defaults
+    /// to the theme's primary metric size; override to a smaller font
+    /// when the ring is rendered at a small diameter.
+    var valueFont: Font = TerminalTheme.Fonts.metric
 
     private var clampedProgress: Double {
         min(max(progress, 0), 1)
@@ -69,7 +73,7 @@ struct RingGaugeView: View {
 
             VStack(spacing: 2) {
                 Text(valueText)
-                    .font(TerminalTheme.Fonts.metric)
+                    .font(valueFont)
                     .foregroundStyle(TerminalTheme.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)

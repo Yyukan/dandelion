@@ -67,11 +67,12 @@ struct GoUsageCard: View {
         VStack(spacing: 2) {
             RingGaugeView(
                 progress: window.usedPercent / 100,
-                valueText: "\(Int(window.usedPercent))%",
+                valueText: String(format: "%.1f%%", window.usedPercent),
                 label: window.label,
                 tint: window.isHealthy ? TerminalTheme.Colors.accent : TerminalTheme.Colors.danger,
                 size: 72,
-                lineWidth: 3
+                lineWidth: 3,
+                valueFont: TerminalTheme.Fonts.metricSmall
             )
             Text(Self.countdownText(window.resetsIn))
                 .font(TerminalTheme.Fonts.caption)

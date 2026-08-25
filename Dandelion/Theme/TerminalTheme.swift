@@ -42,6 +42,7 @@ enum TerminalTheme {
         static let body = mono(12, weight: .regular)
         static let caption = mono(10, weight: .regular)
         static let metric = mono(20, weight: .bold)
+        static let metricSmall = mono(16, weight: .bold)
     }
 
     // MARK: Spacing
