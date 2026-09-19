@@ -54,7 +54,7 @@ actor ModelCatalogService {
         return models.map { model in
             guard model.provider == .go else { return model }
             var model = model
-            model.usageLimits = usageLimits[model.modelID] ?? Self.fallbackGoUsageLimits[model.modelID]
+            model.usageLimits = usageLimits[model.modelID]
             return model
         }
     }
@@ -78,9 +78,9 @@ actor ModelCatalogService {
     /// Returns the Go usage-window request-count table, scraped fresh from
     /// `https://opencode.ai/docs/go` (younger-than-24h cache unless
     /// `forceRefresh`), falling back to the last successful scrape when the
-    /// fetch/parse fails so an OpenCode docs redesign never breaks the
-    /// catalog - the static `fallbackGoUsageLimits` table is the ultimate
-    /// fallback in `loadCatalog` if no scrape has ever succeeded.
+    /// fetch/parse fails, so an OpenCode docs redesign never breaks the
+    /// catalog. A model whose limits we have never once read simply shows no
+    /// limits row - a stale hardcoded snapshot would be worse than nothing.
     private func loadGoUsageLimits(forceRefresh: Bool) async -> [String: GoUsageLimits] {
         let cached = readUsageLimitsCache()
 
@@ -126,45 +126,10 @@ actor ModelCatalogService {
                     inputTokens: model.limit.input,
                     outputTokens: model.limit.output
                 ),
-                usageLimits: nil // filled in by `loadCatalog` from the scraped/static table
+                usageLimits: nil // filled in by `loadCatalog` from the scraped table
             )
         }
     }
-
-    /// Last-resort snapshot of the table published on
-    /// `https://opencode.ai/docs/go` ("Usage limits" section), used only when
-    /// scraping it fresh has never once succeeded (no cache, first launch
-    /// offline). Go's 5h/weekly/monthly limits are dollar-value based, so
-    /// this is the docs' own request-count estimate per model.
-    private static let fallbackGoUsageLimits: [String: GoUsageLimits] = [
-        "deepseek-v4.1-flash": GoUsageLimits(requestsPer5h: 26_000, requestsPerWeek: 65_000, requestsPerMonth: 130_000),
-        "deepseek-v4-flash": GoUsageLimits(requestsPer5h: 13_000, requestsPerWeek: 32_500, requestsPerMonth: 65_000),
-        "deepseek-v4-flash-vision-exp": GoUsageLimits(requestsPer5h: 6_500, requestsPerWeek: 16_250, requestsPerMonth: 32_500),
-        "deepseek-v4-pro": GoUsageLimits(requestsPer5h: 1_050, requestsPerWeek: 2_600, requestsPerMonth: 5_200),
-        "glm-5.1": GoUsageLimits(requestsPer5h: 880, requestsPerWeek: 2_150, requestsPerMonth: 4_300),
-        "glm-5.2": GoUsageLimits(requestsPer5h: 880, requestsPerWeek: 2_150, requestsPerMonth: 4_300),
-        "glm-5.3": GoUsageLimits(requestsPer5h: 220, requestsPerWeek: 540, requestsPerMonth: 1_080),
-        "glm-5.3-flash": GoUsageLimits(requestsPer5h: 6_320, requestsPerWeek: 15_790, requestsPerMonth: 31_580),
-        "gpt-5.6-luna": GoUsageLimits(requestsPer5h: 2_050, requestsPerWeek: 5_100, requestsPerMonth: 10_250),
-        "grok-4.6": GoUsageLimits(requestsPer5h: 169, requestsPerWeek: 423, requestsPerMonth: 845),
-        "hy3": GoUsageLimits(requestsPer5h: 4_300, requestsPerWeek: 10_750, requestsPerMonth: 21_500),
-        "hy4-preview": GoUsageLimits(requestsPer5h: 1_350, requestsPerWeek: 3_380, requestsPerMonth: 6_770),
-        "kimi-k2.6": GoUsageLimits(requestsPer5h: 1_150, requestsPerWeek: 2_880, requestsPerMonth: 5_750),
-        "kimi-k2.7-code": GoUsageLimits(requestsPer5h: 1_350, requestsPerWeek: 3_380, requestsPerMonth: 6_750),
-        "kimi-k3": GoUsageLimits(requestsPer5h: 110, requestsPerWeek: 250, requestsPerMonth: 490),
-        "longcat-2.0": GoUsageLimits(requestsPer5h: 11_400, requestsPerWeek: 28_600, requestsPerMonth: 57_200),
-        "mimo-v2.5": GoUsageLimits(requestsPer5h: 30_100, requestsPerWeek: 75_200, requestsPerMonth: 150_400),
-        "mimo-v2.5-pro": GoUsageLimits(requestsPer5h: 3_250, requestsPerWeek: 8_150, requestsPerMonth: 16_300),
-        "minimax-m2.7": GoUsageLimits(requestsPer5h: 3_400, requestsPerWeek: 8_500, requestsPerMonth: 17_000),
-        "minimax-m3": GoUsageLimits(requestsPer5h: 3_200, requestsPerWeek: 8_000, requestsPerMonth: 16_000),
-        "muse-spark-1.2-contributor": GoUsageLimits(requestsPer5h: 45_300, requestsPerWeek: 113_300, requestsPerMonth: 226_600),
-        "muse-spark-1.3-contributor": GoUsageLimits(requestsPer5h: 45_300, requestsPerWeek: 113_300, requestsPerMonth: 226_600),
-        "qwen3.6-plus": GoUsageLimits(requestsPer5h: 3_300, requestsPerWeek: 8_200, requestsPerMonth: 16_300),
-        "qwen3.7-max": GoUsageLimits(requestsPer5h: 170, requestsPerWeek: 420, requestsPerMonth: 840),
-        "qwen3.7-plus": GoUsageLimits(requestsPer5h: 4_300, requestsPerWeek: 10_800, requestsPerMonth: 21_600),
-        "qwen3.8-flash": GoUsageLimits(requestsPer5h: 5_400, requestsPerWeek: 13_500, requestsPerMonth: 27_000),
-        "qwen3.8-max": GoUsageLimits(requestsPer5h: 160, requestsPerWeek: 400, requestsPerMonth: 810),
-    ]
 
     private func mapPricing(_ cost: ModelsDevCost?) -> ModelPricing {
         guard let cost else {
