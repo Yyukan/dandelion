@@ -98,18 +98,45 @@ final class ModelCatalogViewModel {
 
         switch sortOption {
         case .name:
-            result.sort { $0.displayName < $1.displayName }
+            result.sort { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
         case .priceAscending:
-            result.sort { $0.pricing.inputPerM < $1.pricing.inputPerM }
+            result.sort { isOrdered($0.pricing.inputPerM, $1.pricing.inputPerM, ascending: true, lhs: $0, rhs: $1) }
         case .priceDescending:
-            result.sort { $0.pricing.inputPerM > $1.pricing.inputPerM }
+            result.sort { isOrdered($0.pricing.inputPerM, $1.pricing.inputPerM, ascending: false, lhs: $0, rhs: $1) }
         case .usageLimitAscending:
-            result.sort { ($0.usageLimits?.requestsPerMonth ?? 0) < ($1.usageLimits?.requestsPerMonth ?? 0) }
+            result.sort { isOrdered($0.usageLimits?.requestsPerMonth, $1.usageLimits?.requestsPerMonth, ascending: true, lhs: $0, rhs: $1) }
         case .usageLimitDescending:
-            result.sort { ($0.usageLimits?.requestsPerMonth ?? 0) > ($1.usageLimits?.requestsPerMonth ?? 0) }
+            result.sort { isOrdered($0.usageLimits?.requestsPerMonth, $1.usageLimits?.requestsPerMonth, ascending: false, lhs: $0, rhs: $1) }
         }
 
         return result
+    }
+
+    /// Orders two optional sort keys, keeping models without a published price
+    /// or usage limit at the bottom of the list in both directions, and
+    /// breaking ties (and the "no value" case) by name.
+    private func isOrdered<T: Comparable>(
+        _ lhsKey: T?,
+        _ rhsKey: T?,
+        ascending: Bool,
+        lhs: CatalogModel,
+        rhs: CatalogModel
+    ) -> Bool {
+        switch (lhsKey, rhsKey) {
+        case let (l?, r?):
+            guard l != r else { return nameComesFirst(lhs, rhs) }
+            return ascending ? l < r : l > r
+        case (_?, nil):
+            return true
+        case (nil, _?):
+            return false
+        case (nil, nil):
+            return nameComesFirst(lhs, rhs)
+        }
+    }
+
+    private func nameComesFirst(_ lhs: CatalogModel, _ rhs: CatalogModel) -> Bool {
+        lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
     }
 
     /// Runs credential discovery/validation and the catalog load in parallel

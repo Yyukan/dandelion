@@ -17,11 +17,26 @@ struct SettingsView: View {
                 .font(TerminalTheme.Fonts.title)
 
             refreshSection
+            versionFooter
         }
         .padding(TerminalTheme.Spacing.lg)
         .frame(width: 360)
         .background(TerminalTheme.Colors.background)
         .foregroundStyle(TerminalTheme.Colors.textPrimary)
+    }
+
+    /// Version + build, read from the bundle so it always matches the release.
+    private var versionFooter: some View {
+        Text("Dandelion \(Self.versionLabel)")
+            .font(TerminalTheme.Fonts.caption)
+            .foregroundStyle(TerminalTheme.Colors.textTertiary)
+    }
+
+    static var versionLabel: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "unknown"
+        guard let build = info?["CFBundleVersion"] as? String else { return version }
+        return "\(version) (\(build))"
     }
 
     private var refreshSection: some View {
