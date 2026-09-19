@@ -65,12 +65,12 @@ final class ZenBalanceViewModel {
             state = .loaded(balance)
         } catch let error as UsageServiceError {
             switch error {
-            case .workspaceNotFound, .balanceNotFound:
-                // A cookie was found, but the authenticated page couldn't be
-                // parsed - the most likely cause is that the browser session
-                // behind it has since expired.
+            case .workspaceNotFound, .balanceNotFound, .sessionExpired:
+                // A cookie was found, but the console rejected it or its
+                // payload was unusable - the most likely cause is that the
+                // browser session behind it has since expired.
                 state = .sessionExpired
-            case .goUsageNotFound, .network:
+            case .goUsageNotFound, .missingGoAPIKey, .network:
                 state = .unavailable
             }
         } catch {

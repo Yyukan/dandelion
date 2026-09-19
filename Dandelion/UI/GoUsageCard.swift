@@ -31,7 +31,7 @@ struct GoUsageCard: View {
             case .unavailable:
                 UnavailableStateView()
             case .sessionExpired:
-                SessionExpiredStateView(consoleURL: URL(string: "https://opencode.ai/go")!)
+                SessionExpiredStateView(consoleURL: URL(string: "https://opencode.ai/docs/go")!)
             }
         }
         .task { await viewModel.refresh() }
@@ -54,12 +54,6 @@ struct GoUsageCard: View {
                 usageRing(summary.monthly)
             }
             .frame(maxWidth: .infinity, alignment: .center)
-
-            if summary.isUsingZenBalance {
-                Text("Go limits reached - now billing from Zen balance")
-                    .font(TerminalTheme.Fonts.caption)
-                    .foregroundStyle(TerminalTheme.Colors.warning)
-            }
         }
     }
 
@@ -103,10 +97,10 @@ private struct UnavailableStateView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Usage unavailable")
                     .font(TerminalTheme.Fonts.body.weight(.semibold))
-                Text("Sign in to opencode.ai in your browser, then refresh.")
+                Text("No OpenCode Go key found - connect Go in OpenCode, then refresh.")
                     .font(TerminalTheme.Fonts.caption)
                     .foregroundStyle(TerminalTheme.Colors.textSecondary)
-                Link("Open Console", destination: URL(string: "https://opencode.ai/go")!)
+                Link("Go setup", destination: URL(string: "https://opencode.ai/docs/go")!)
                     .font(TerminalTheme.Fonts.caption)
                     .foregroundStyle(TerminalTheme.Colors.accent)
             }
@@ -125,7 +119,7 @@ private struct SessionExpiredStateView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Session expired")
                     .font(TerminalTheme.Fonts.body.weight(.semibold))
-                Text("Please relogin in the browser, then refresh.")
+                Text("Go API key rejected - reconnect OpenCode Go, then refresh.")
                     .font(TerminalTheme.Fonts.caption)
                     .foregroundStyle(TerminalTheme.Colors.textSecondary)
                 Link("Open Console", destination: consoleURL)

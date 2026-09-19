@@ -39,7 +39,8 @@ Because the live balance/usage endpoints are undocumented and can change without
 - macOS 26 ("Tahoe") or later
 - Xcode 26+ (full IDE, not just Command Line Tools)
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) to generate the `.xcodeproj` from `project.yml` (`brew install xcodegen`)
-- An OpenCode account already connected on this machine (i.e. `~/.local/share/opencode/auth.json`)
+- An OpenCode account connected on this machine (i.e. `~/.local/share/opencode/auth.json`) with the **OpenCode Go** provider - Go usage is read from OpenCode's official API with that key, no browser session involved.
+- A signed-in **OpenCode console** session in your browser (Chrome/Brave/Arc/Edge/Safari) for the live Zen balance.
 
 ## Running locally
 
@@ -63,8 +64,8 @@ open ~/Library/Developer/Xcode/DerivedData/Dandelion-*/Build/Products/Debug/Dand
 
 ### First-run permissions
 
-- **Zen/Go catalog and key validation** work immediately as long as `auth.json` has your keys - no extra permission prompts.
-- **Live Zen balance / Go usage** additionally need read access to your browser's cookie store: Chromium-based browsers (Chrome/Brave/Arc/Edge) prompt for Keychain access to decrypt cookies. 
+- **Zen/Go catalog, key validation and Go usage** work immediately as long as `auth.json` has your keys - no extra permission prompts.
+- **Live Zen balance** reads the console's JSON API (the 2026-09 "OpenCode Console" rewrite moved off the old page scraping), so it needs the browser's `__Host-console_session` cookie: Chromium-based browsers (Chrome/Brave/Arc/Edge) prompt for Keychain access to decrypt cookies. Sign in at https://opencode.ai/console/ if the balance shows "Session expired".
 
 ## Installing
 

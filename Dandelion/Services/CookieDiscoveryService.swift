@@ -28,7 +28,10 @@ private let sqliteTransientDestructor = unsafeBitCast(-1, to: sqlite3_destructor
 
 struct CookieDiscoveryService: Sendable {
     private static let targetDomain = "opencode.ai"
-    private static let targetCookieName = "auth"
+    /// The console's session cookie (the 2026-09 console rewrite replaced the
+    /// old `auth` cookie: the dashboard pages and `/console/api/**` are now
+    /// authenticated by this `__Host-`-prefixed cookie alone).
+    private static let targetCookieName = "__Host-console_session"
 
     private let overrideStore: CookieOverrideStore
 
@@ -169,10 +172,10 @@ struct CookieDiscoveryService: Sendable {
     /// Decrypts a Chromium `encrypted_value` blob: a 3-byte "v10"/"v11"
     /// prefix followed by AES-128-CBC ciphertext with a fixed 16-space IV.
     /// Newer Chrome builds additionally prepend a 32-byte domain-binding
-    /// hash to the plaintext; since OpenCode's session cookie is a
-    /// Hapi/Iron seal that always starts with "Fe26.", that known prefix
-    /// lets us reliably detect and strip it without reimplementing that
-    /// hardening scheme.
+    /// hash to the plaintext, which is stripped by keeping whichever of the
+    /// two candidates is a printable token (the old `auth` cookie was a
+    /// Hapi/Iron seal starting "Fe26."; the console session is an opaque
+    /// `st_...` token, so both shapes are accepted).
     private func decryptChromiumCookie(_ encrypted: Data, key: Data) -> String? {
         guard encrypted.count > 3 else { return nil }
         let prefix = String(data: encrypted.prefix(3), encoding: .utf8)
@@ -205,16 +208,22 @@ struct CookieDiscoveryService: Sendable {
         guard status == kCCSuccess else { return nil }
         decrypted = decrypted.prefix(decryptedLength)
 
-        if decrypted.count > 32 {
-            let stripped = decrypted.suffix(from: 32)
-            if let value = String(data: stripped, encoding: .utf8), value.hasPrefix("Fe26.") {
-                return value
-            }
+        // Domain-bound plaintext (Chrome 130+): 32-byte SHA-256 prefix.
+        if decrypted.count > 32, let token = Self.printableToken(decrypted.suffix(from: 32)) {
+            return token
         }
-        if let value = String(data: decrypted, encoding: .utf8), value.hasPrefix("Fe26.") {
-            return value
+        return Self.printableToken(decrypted)
+    }
+
+    /// Returns the value only when it looks like a real cookie token (UTF-8,
+    /// no control bytes, at least 8 characters) - so a blob that failed to
+    /// decrypt is never mistaken for a session value.
+    private static func printableToken(_ data: Data) -> String? {
+        guard data.count >= 8, let value = String(data: data, encoding: .utf8) else { return nil }
+        guard value.allSatisfy({ $0.isASCII && !$0.isNewline && ($0.isLetter || $0.isNumber || "-_.~=%+/".contains($0)) }) else {
+            return nil
         }
-        return nil
+        return value
     }
 
     // MARK: - Safari
