@@ -32,7 +32,7 @@ struct ZenBalanceCard: View {
             case .unavailable:
                 UnavailableStateView()
             case .sessionExpired:
-                SessionExpiredStateView(consoleURL: URL(string: "https://opencode.ai/zen")!)
+                SessionExpiredStateView(consoleURL: URL(string: "https://opencode.ai/console/")!)
             }
         }
         .task { await viewModel.refresh() }
@@ -89,10 +89,10 @@ private struct UnavailableStateView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Balance unavailable")
                         .font(TerminalTheme.Fonts.body.weight(.semibold))
-                    Text("Sign in to opencode.ai in your browser, then refresh.")
+                    Text("Sign in to the OpenCode console in your browser, then refresh.")
                         .font(TerminalTheme.Fonts.caption)
                         .foregroundStyle(TerminalTheme.Colors.textSecondary)
-                    Link("Open Console", destination: URL(string: "https://opencode.ai/zen")!)
+                    Link("Open Console", destination: URL(string: "https://opencode.ai/console/")!)
                         .font(TerminalTheme.Fonts.caption)
                         .foregroundStyle(TerminalTheme.Colors.accent)
                 }
@@ -112,7 +112,7 @@ private struct SessionExpiredStateView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Session expired")
                     .font(TerminalTheme.Fonts.body.weight(.semibold))
-                Text("Please relogin in the browser, then refresh.")
+                Text("Console session expired - sign in again, then refresh.")
                     .font(TerminalTheme.Fonts.caption)
                     .foregroundStyle(TerminalTheme.Colors.textSecondary)
                 Link("Open Console", destination: consoleURL)
