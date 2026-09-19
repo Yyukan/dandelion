@@ -128,8 +128,13 @@ private struct CatalogModelRow: View {
                     usageLimitsRow(usageLimits)
                 }
             }
-            Spacer()
+            // The name column must win the space before the trailing price
+            // does; without this, SwiftUI truncates names like
+            // "DeepSeek V4 Flash" even when the row has room to spare.
+            .layoutPriority(1)
+            Spacer(minLength: TerminalTheme.Spacing.sm)
             priceStack
+                .fixedSize()
         }
         .padding(TerminalTheme.Spacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)

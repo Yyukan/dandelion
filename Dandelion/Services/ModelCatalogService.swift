@@ -137,22 +137,33 @@ actor ModelCatalogService {
     /// offline). Go's 5h/weekly/monthly limits are dollar-value based, so
     /// this is the docs' own request-count estimate per model.
     private static let fallbackGoUsageLimits: [String: GoUsageLimits] = [
-        "grok-4.5": GoUsageLimits(requestsPer5h: 120, requestsPerWeek: 300, requestsPerMonth: 600),
-        "glm-5.2": GoUsageLimits(requestsPer5h: 880, requestsPerWeek: 2_150, requestsPerMonth: 4_300),
+        "deepseek-v4.1-flash": GoUsageLimits(requestsPer5h: 26_000, requestsPerWeek: 65_000, requestsPerMonth: 130_000),
+        "deepseek-v4-flash": GoUsageLimits(requestsPer5h: 13_000, requestsPerWeek: 32_500, requestsPerMonth: 65_000),
+        "deepseek-v4-flash-vision-exp": GoUsageLimits(requestsPer5h: 6_500, requestsPerWeek: 16_250, requestsPerMonth: 32_500),
+        "deepseek-v4-pro": GoUsageLimits(requestsPer5h: 1_050, requestsPerWeek: 2_600, requestsPerMonth: 5_200),
         "glm-5.1": GoUsageLimits(requestsPer5h: 880, requestsPerWeek: 2_150, requestsPerMonth: 4_300),
-        "kimi-k3": GoUsageLimits(requestsPer5h: 110, requestsPerWeek: 250, requestsPerMonth: 490),
-        "kimi-k2.7-code": GoUsageLimits(requestsPer5h: 1_350, requestsPerWeek: 3_380, requestsPerMonth: 6_750),
+        "glm-5.2": GoUsageLimits(requestsPer5h: 880, requestsPerWeek: 2_150, requestsPerMonth: 4_300),
+        "glm-5.3": GoUsageLimits(requestsPer5h: 220, requestsPerWeek: 540, requestsPerMonth: 1_080),
+        "glm-5.3-flash": GoUsageLimits(requestsPer5h: 6_320, requestsPerWeek: 15_790, requestsPerMonth: 31_580),
+        "gpt-5.6-luna": GoUsageLimits(requestsPer5h: 2_050, requestsPerWeek: 5_100, requestsPerMonth: 10_250),
+        "grok-4.6": GoUsageLimits(requestsPer5h: 169, requestsPerWeek: 423, requestsPerMonth: 845),
+        "hy3": GoUsageLimits(requestsPer5h: 4_300, requestsPerWeek: 10_750, requestsPerMonth: 21_500),
+        "hy4-preview": GoUsageLimits(requestsPer5h: 1_350, requestsPerWeek: 3_380, requestsPerMonth: 6_770),
         "kimi-k2.6": GoUsageLimits(requestsPer5h: 1_150, requestsPerWeek: 2_880, requestsPerMonth: 5_750),
+        "kimi-k2.7-code": GoUsageLimits(requestsPer5h: 1_350, requestsPerWeek: 3_380, requestsPerMonth: 6_750),
+        "kimi-k3": GoUsageLimits(requestsPer5h: 110, requestsPerWeek: 250, requestsPerMonth: 490),
+        "longcat-2.0": GoUsageLimits(requestsPer5h: 11_400, requestsPerWeek: 28_600, requestsPerMonth: 57_200),
         "mimo-v2.5": GoUsageLimits(requestsPer5h: 30_100, requestsPerWeek: 75_200, requestsPerMonth: 150_400),
         "mimo-v2.5-pro": GoUsageLimits(requestsPer5h: 3_250, requestsPerWeek: 8_150, requestsPerMonth: 16_300),
-        "minimax-m3": GoUsageLimits(requestsPer5h: 3_200, requestsPerWeek: 8_000, requestsPerMonth: 16_000),
         "minimax-m2.7": GoUsageLimits(requestsPer5h: 3_400, requestsPerWeek: 8_500, requestsPerMonth: 17_000),
-        "qwen3.7-max": GoUsageLimits(requestsPer5h: 950, requestsPerWeek: 2_390, requestsPerMonth: 4_770),
-        "qwen3.7-plus": GoUsageLimits(requestsPer5h: 4_300, requestsPerWeek: 10_800, requestsPerMonth: 21_600),
+        "minimax-m3": GoUsageLimits(requestsPer5h: 3_200, requestsPerWeek: 8_000, requestsPerMonth: 16_000),
+        "muse-spark-1.2-contributor": GoUsageLimits(requestsPer5h: 45_300, requestsPerWeek: 113_300, requestsPerMonth: 226_600),
+        "muse-spark-1.3-contributor": GoUsageLimits(requestsPer5h: 45_300, requestsPerWeek: 113_300, requestsPerMonth: 226_600),
         "qwen3.6-plus": GoUsageLimits(requestsPer5h: 3_300, requestsPerWeek: 8_200, requestsPerMonth: 16_300),
-        "deepseek-v4-pro": GoUsageLimits(requestsPer5h: 3_450, requestsPerWeek: 8_550, requestsPerMonth: 17_150),
-        "deepseek-v4-flash": GoUsageLimits(requestsPer5h: 31_650, requestsPerWeek: 79_050, requestsPerMonth: 158_150),
-        "hy3": GoUsageLimits(requestsPer5h: 4_300, requestsPerWeek: 10_750, requestsPerMonth: 21_500),
+        "qwen3.7-max": GoUsageLimits(requestsPer5h: 170, requestsPerWeek: 420, requestsPerMonth: 840),
+        "qwen3.7-plus": GoUsageLimits(requestsPer5h: 4_300, requestsPerWeek: 10_800, requestsPerMonth: 21_600),
+        "qwen3.8-flash": GoUsageLimits(requestsPer5h: 5_400, requestsPerWeek: 13_500, requestsPerMonth: 27_000),
+        "qwen3.8-max": GoUsageLimits(requestsPer5h: 160, requestsPerWeek: 400, requestsPerMonth: 810),
     ]
 
     private func mapPricing(_ cost: ModelsDevCost?) -> ModelPricing {
@@ -225,15 +236,24 @@ actor ModelCatalogService {
 
     /// Parses the "Model" | "requests per 5 hour" | "requests per week" |
     /// "requests per month" table into `[displayName: GoUsageLimits]`.
+    ///
+    /// The docs now decorate promo rows: `DeepSeek V4.1 Flash<br><small>4x ·
+    /// Ends Sep 20</small>` over `<del>6,500</del><br><strong>26,000</strong>`.
+    /// Concatenating that yields "DeepSeek V4.1 Flash4x · Ends Sep 20" and
+    /// "6,50026,000", so both the name join and the integer parse used to
+    /// fail and the model silently lost its limits. Hence `primaryLabel` /
+    /// `firstNumber` below, which drop `<del>` values and stop at `<br>`.
     private static func parseUsageLimitsTable(html: String) -> [String: GoUsageLimits] {
         guard let tableHTML = extractTable(containing: "requests per 5 hour", in: html) else { return [:] }
 
         var result: [String: GoUsageLimits] = [:]
-        for cells in parseRows(tableHTML) where cells.count >= 4 && cells[0] != "Model" {
-            guard let h5 = Int(cells[1].replacingOccurrences(of: ",", with: "")),
-                  let week = Int(cells[2].replacingOccurrences(of: ",", with: "")),
-                  let month = Int(cells[3].replacingOccurrences(of: ",", with: "")) else { continue }
-            result[cells[0]] = GoUsageLimits(requestsPer5h: h5, requestsPerWeek: week, requestsPerMonth: month)
+        for cells in parseRows(tableHTML) where cells.count >= 4 {
+            let name = primaryLabel(cells[0])
+            guard !name.isEmpty, name != "Model" else { continue }
+            guard let h5 = firstNumber(cells[1]),
+                  let week = firstNumber(cells[2]),
+                  let month = firstNumber(cells[3]) else { continue }
+            result[name] = GoUsageLimits(requestsPer5h: h5, requestsPerWeek: week, requestsPerMonth: month)
         }
         return result
     }
@@ -244,8 +264,10 @@ actor ModelCatalogService {
         guard let tableHTML = extractTable(containing: "Model ID", in: html) else { return [:] }
 
         var result: [String: String] = [:]
-        for cells in parseRows(tableHTML) where cells.count >= 2 && cells[0] != "Model" {
-            result[cells[0]] = cells[1]
+        for cells in parseRows(tableHTML) where cells.count >= 2 {
+            let name = primaryLabel(cells[0])
+            guard !name.isEmpty, name != "Model" else { continue }
+            result[name] = cellText(cells[1])
         }
         return result
     }
@@ -267,9 +289,8 @@ actor ModelCatalogService {
         return String(html[tableStart.lowerBound..<tableEnd.upperBound])
     }
 
-    /// Splits a `<table>` HTML block into rows of stripped cell text, from
-    /// both `<td>`/`<th>` cells (so header rows come back too and are
-    /// filtered by callers on their known first-column label).
+    /// Splits a `<table>` HTML block into rows of raw cell HTML (tags intact -
+    /// callers apply `cellText`/`primaryLabel`/`firstNumber` as appropriate).
     private static func parseRows(_ tableHTML: String) -> [[String]] {
         guard let rowRegex = try? NSRegularExpression(pattern: "<tr[^>]*>(.*?)</tr>", options: [.dotMatchesLineSeparators]),
               let cellRegex = try? NSRegularExpression(pattern: "<t[dh][^>]*>(.*?)</t[dh]>", options: [.dotMatchesLineSeparators])
@@ -282,9 +303,39 @@ actor ModelCatalogService {
             let nsRow = rowHTML as NSString
             let cellMatches = cellRegex.matches(in: rowHTML, range: NSRange(location: 0, length: nsRow.length))
             guard !cellMatches.isEmpty else { continue }
-            rows.append(cellMatches.map { stripTags(nsRow.substring(with: $0.range(at: 1))) })
+            rows.append(cellMatches.map { nsRow.substring(with: $0.range(at: 1)) })
         }
         return rows
+    }
+
+    /// Cell text with the row's flair removed: `<del>` blocks (superseded
+    /// promo values) are dropped and everything from the first `<br>` on
+    /// (e.g. "4x · Ends Sep 20") is discarded.
+    private static func primaryLabel(_ cellHTML: String) -> String {
+        let withoutDeleted = removingDeletedSpans(cellHTML)
+        return cellText(withoutDeleted.components(separatedBy: "<br").first ?? "")
+    }
+
+    /// The first number in a cell, ignoring thousands separators and any
+    /// struck-through value ahead of it (`<del>6,500</del>…26,000` -> 26,000).
+    private static func firstNumber(_ cellHTML: String) -> Int? {
+        let text = cellText(removingDeletedSpans(cellHTML))
+        guard let match = text.range(of: #"[\d][\d,]*"#, options: .regularExpression) else { return nil }
+        return Int(text[match].replacingOccurrences(of: ",", with: ""))
+    }
+
+    private static func removingDeletedSpans(_ html: String) -> String {
+        guard let regex = try? NSRegularExpression(
+            pattern: "<del[^>]*>[\\s\\S]*?</del>",
+            options: [.caseInsensitive]
+        ) else { return html }
+        let range = NSRange(html.startIndex..., in: html)
+        return regex.stringByReplacingMatches(in: html, range: range, withTemplate: "")
+    }
+
+    private static func cellText(_ html: String) -> String {
+        stripTags(html).replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private static func stripTags(_ html: String) -> String {
