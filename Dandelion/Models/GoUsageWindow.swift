@@ -2,9 +2,8 @@
 //  GoUsageWindow.swift
 //  Dandelion
 //
-//  Live OpenCode Go subscription usage windows, surfaced by the private
-//  workspace "go" dashboard page (no public REST API exposes this either -
-//  see UsageService).
+//  Live OpenCode Go subscription usage windows, from the official
+//  `GET /zen/go/v1/usage` endpoint (see UsageService).
 //
 
 import Foundation
@@ -19,12 +18,9 @@ struct GoUsageWindow: Sendable, Equatable {
     let isHealthy: Bool
 }
 
-/// The full set of Go usage windows for a workspace, plus whether the
-/// account has spilled over to Zen pay-as-you-go balance instead of
-/// counting against these windows - OpenCode's documented "Use balance" behavior.
+/// The full set of Go usage windows for a workspace.
 struct GoUsageSummary: Sendable, Equatable {
     let rolling5h: GoUsageWindow
     let weekly: GoUsageWindow
     let monthly: GoUsageWindow
-    let isUsingZenBalance: Bool
 }

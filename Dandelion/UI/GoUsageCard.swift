@@ -54,12 +54,6 @@ struct GoUsageCard: View {
                 usageRing(summary.monthly)
             }
             .frame(maxWidth: .infinity, alignment: .center)
-
-            if summary.isUsingZenBalance {
-                Text("Go limits reached - now billing from Zen balance")
-                    .font(TerminalTheme.Fonts.caption)
-                    .foregroundStyle(TerminalTheme.Colors.warning)
-            }
         }
     }
 

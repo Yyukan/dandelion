@@ -20,7 +20,6 @@ enum TerminalTheme {
         static let border = Color.white.opacity(0.08)
 
         static let accent = Color(red: 0.310, green: 0.635, blue: 0.980) // azure blue
-        static let accentDim = Color(red: 0.310, green: 0.635, blue: 0.980).opacity(0.35)
 
         static let textPrimary = Color(white: 0.94)
         static let textSecondary = Color(white: 0.62)
@@ -52,7 +51,6 @@ enum TerminalTheme {
         static let sm: CGFloat = 8
         static let md: CGFloat = 12
         static let lg: CGFloat = 16
-        static let xl: CGFloat = 24
     }
 
     // MARK: Metrics

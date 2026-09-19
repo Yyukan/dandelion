@@ -2,9 +2,10 @@
 //  CookieOverrideStore.swift
 //  Dandelion
 //
-//  Stores the user's manually-pasted opencode.ai session cookie in the
-//  macOS Keychain (never plaintext), for use when automatic browser cookie
-//  discovery fails - the fallback path Settings exposes.
+//  Reads a manually-pasted opencode.ai session cookie from the macOS Keychain
+//  (never plaintext), used as a fallback when automatic browser cookie
+//  discovery fails. The Settings field that wrote it has been removed, so
+//  only cookies saved by an earlier build are found here.
 //
 
 import Foundation
@@ -29,37 +30,5 @@ struct CookieOverrideStore: Sendable {
               !value.isEmpty
         else { return nil }
         return value
-    }
-
-    func save(_ value: String) {
-        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            clear()
-            return
-        }
-
-        let baseQuery: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: Self.service,
-            kSecAttrAccount as String: Self.account,
-        ]
-        let data = Data(trimmed.utf8)
-
-        var updateQuery = baseQuery
-        updateQuery[kSecValueData as String] = data
-        let status = SecItemAdd(updateQuery as CFDictionary, nil)
-
-        if status == errSecDuplicateItem {
-            SecItemUpdate(baseQuery as CFDictionary, [kSecValueData as String: data] as CFDictionary)
-        }
-    }
-
-    func clear() {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: Self.service,
-            kSecAttrAccount as String: Self.account,
-        ]
-        SecItemDelete(query as CFDictionary)
     }
 }

@@ -136,10 +136,7 @@ actor UsageService {
         return GoUsageSummary(
             rolling5h: window(payload.usage.rolling, label: "5h"),
             weekly: window(payload.usage.weekly, label: "Weekly"),
-            monthly: window(payload.usage.monthly, label: "Monthly"),
-            // This endpoint reports percentages only; OpenCode's "now billing
-            // from Zen balance" flag has no equivalent here.
-            isUsingZenBalance: false
+            monthly: window(payload.usage.monthly, label: "Monthly")
         )
     }
 
@@ -230,8 +227,6 @@ actor UsageService {
     }
 
     private struct BillingStatus: Decodable {
-        let billingMode: String
-        let mode: String
         /// Micro-cents, as a string (100,000,000 per dollar).
         let balanceMicroCents: String?
         let creditLimitMicroCents: String?
