@@ -11,8 +11,11 @@
 //       https://opencode.ai/v2/docs/console/models -> Zen prices
 //       https://opencode.ai/v2/docs/console/go     -> Go prices + the 5h/weekly/
 //                                                     monthly usage-limit table
-//  3. Models the docs mark as deprecated are dropped; models the docs don't
-//     cover yet are still listed with the model ID as their name and no price.
+//     Both pages are still being filled in, so the legacy docs pages
+//     (https://opencode.ai/docs/zen and /docs/go) are merged in underneath
+//     them: the console value wins wherever both have one, never the reverse.
+//  3. Models the docs mark as deprecated are dropped; models no page covers
+//     are still listed with the model ID as their name and no price.
 //
 //  Cached locally for 24h, falling back to the last successful catalog when a
 //  fetch or parse fails, so an OpenCode docs redesign never empties the view.
@@ -26,6 +29,10 @@ actor ModelCatalogService {
     private static let goModelsURL = URL(string: "https://opencode.ai/zen/go/v1/models")!
     private static let zenDocsURL = URL(string: "https://opencode.ai/v2/docs/console/models")!
     private static let goDocsURL = URL(string: "https://opencode.ai/v2/docs/console/go")!
+    /// Legacy (v1) docs pages, used only to fill in whatever the console pages
+    /// don't list yet - they currently cover more models than v2 does.
+    private static let zenLegacyDocsURL = URL(string: "https://opencode.ai/docs/zen")!
+    private static let goLegacyDocsURL = URL(string: "https://opencode.ai/docs/go")!
 
     private static let refreshInterval: TimeInterval = 24 * 60 * 60 // daily cadence
     /// The console docs pages are occasionally served without their tables (an
@@ -82,12 +89,16 @@ actor ModelCatalogService {
         async let goIDs = fetchModelIDs(from: Self.goModelsURL)
         async let zenHTML = fetchDocsHTML(from: Self.zenDocsURL)
         async let goHTML = fetchDocsHTML(from: Self.goDocsURL)
+        async let zenLegacyHTML = fetchDocsHTML(from: Self.zenLegacyDocsURL)
+        async let goLegacyHTML = fetchDocsHTML(from: Self.goLegacyDocsURL)
 
-        let (zen, go, zenDocs, goDocs) = try await (zenIDs, goIDs, zenHTML, goHTML)
+        let (zen, go, zenDocs, goDocs, zenLegacy, goLegacy) = try await (
+            zenIDs, goIDs, zenHTML, goHTML, zenLegacyHTML, goLegacyHTML
+        )
         guard !zen.isEmpty, !go.isEmpty else { throw URLError(.cannotParseResponse) }
 
-        let zenPage = Self.parseDocs(zenDocs)
-        let goPage = Self.parseDocs(goDocs)
+        let zenPage = Self.parseDocs(zenDocs).fillingGaps(from: Self.parseDocs(zenLegacy))
+        let goPage = Self.parseDocs(goDocs).fillingGaps(from: Self.parseDocs(goLegacy))
         guard !zenPage.isEmpty || !goPage.isEmpty else { throw URLError(.cannotParseResponse) }
 
         var models = zen
@@ -175,6 +186,25 @@ actor ModelCatalogService {
 
         var isEmpty: Bool {
             nameByID.isEmpty && pricingByID.isEmpty && limitsByID.isEmpty
+        }
+
+        /// Fills in whatever this page doesn't cover from the legacy docs page,
+        /// field by field. Console-page data always wins where both have it, so
+        /// this only ever adds coverage.
+        func fillingGaps(from fallback: DocsPage) -> DocsPage {
+            var merged = self
+            for (id, name) in fallback.nameByID where merged.nameByID[id] == nil {
+                merged.nameByID[id] = name
+            }
+            for (id, pricing) in fallback.pricingByID where merged.pricingByID[id] == nil {
+                merged.pricingByID[id] = pricing
+            }
+            for (id, limits) in fallback.limitsByID where merged.limitsByID[id] == nil {
+                merged.limitsByID[id] = limits
+            }
+            merged.deprecatedIDs.formUnion(fallback.deprecatedIDs)
+            merged.deprecatedSlugs.formUnion(fallback.deprecatedSlugs)
+            return merged
         }
 
         func isDeprecated(_ modelID: String, slug modelSlug: String) -> Bool {
