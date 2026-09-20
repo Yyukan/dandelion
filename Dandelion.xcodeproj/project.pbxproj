@@ -29,7 +29,6 @@
 		C5B55CBBAB8B3FFF323203C3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1F815E92B652911639F9320A /* Assets.xcassets */; };
 		C9F4F17CABCA7EFB2D26EC19 /* ZenBalanceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2147BB94591BDE0E70B7D85 /* ZenBalanceCard.swift */; };
 		CAA9912AB8B718DCD74DBA25 /* TerminalTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6537974182E950BC2B7C054C /* TerminalTheme.swift */; };
-		D05D4B7F75AD9A83B21FCCAA /* KeyValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FF43C8218A69C6B10BA3BA /* KeyValidationService.swift */; };
 		E4D08B353924FDF08B886385 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4164C386CD52D532547A2394 /* libsqlite3.tbd */; };
 		E6E1BD19248D19055267CA23 /* CatalogModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E7DC803AC43CE91B72F6F4 /* CatalogModel.swift */; };
 		FCA12BC49488AB0EA42DB7A5 /* ModelVendor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042D11FD2C0E98501A41CB19 /* ModelVendor.swift */; };
@@ -57,7 +56,6 @@
 		80861F8A42DCA93569D7E984 /* ZenBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenBalance.swift; sourceTree = "<group>"; };
 		8663CA994121E94C78CA796E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		9F7F56AAA0ED5887C84FF343 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
-		A7FF43C8218A69C6B10BA3BA /* KeyValidationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyValidationService.swift; sourceTree = "<group>"; };
 		B329A6802E36280172A28579 /* DashboardPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardPanel.swift; sourceTree = "<group>"; };
 		B5E4A58143CD99971CD1761A /* RefreshCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshCoordinator.swift; sourceTree = "<group>"; };
 		C2147BB94591BDE0E70B7D85 /* ZenBalanceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenBalanceCard.swift; sourceTree = "<group>"; };
@@ -154,7 +152,6 @@
 				2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */,
 				C3834C36B0F80DEFCED5D226 /* CookieDiscoveryService.swift */,
 				3B0FCBFC49F471DDCFE504F0 /* CookieOverrideStore.swift */,
-				A7FF43C8218A69C6B10BA3BA /* KeyValidationService.swift */,
 				FFCDF56133A5E949D92164B1 /* ModelCatalogService.swift */,
 				B5E4A58143CD99971CD1761A /* RefreshCoordinator.swift */,
 				11D9AF622BACAAFEBD3C488A /* UsageService.swift */,
@@ -256,7 +253,6 @@
 				032B873F97A406E9F621C7E5 /* GoUsageCard.swift in Sources */,
 				33329138108DAC20B234C187 /* GoUsageViewModel.swift in Sources */,
 				2608C64462CEAF595809D867 /* GoUsageWindow.swift in Sources */,
-				D05D4B7F75AD9A83B21FCCAA /* KeyValidationService.swift in Sources */,
 				3B7373F855B8D1546E2ECCCB /* MenuBarController.swift in Sources */,
 				72F3EA67091C54B2F7FC56C6 /* ModelCatalogService.swift in Sources */,
 				9E09A1C1B64DF996105D970A /* ModelCatalogView.swift in Sources */,
