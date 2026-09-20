@@ -2,9 +2,9 @@
 //  RefreshCoordinator.swift
 //  Dandelion
 //
-//  Orchestrates catalog/key-validation/balance/usage fetches in parallel via
-//  a TaskGroup, exposing manual Refresh (⌘R) and a configurable Auto-Refresh
-//  timer backed by AppSettings.
+//  Orchestrates credential-discovery/catalog/balance/usage fetches in parallel
+//  via a TaskGroup, exposing manual Refresh (⌘R) and a configurable
+//  Auto-Refresh timer backed by AppSettings.
 //
 
 import Foundation
@@ -39,8 +39,10 @@ final class RefreshCoordinator {
         }
     }
 
-    /// Runs credential validation, the (cache-respecting) catalog refresh,
-    /// the live Zen balance and the live Go usage fetch all in parallel.
+    /// Runs credential discovery, the (cache-respecting) catalog refresh, the
+    /// live Zen balance and the live Go usage fetch all in parallel. The Zen/Go
+    /// results are also what prove the stored keys work - there is no separate
+    /// validation request any more.
     /// A refresh already in flight is never duplicated.
     func refreshNow() async {
         guard !isRefreshing else { return }
@@ -48,7 +50,7 @@ final class RefreshCoordinator {
         defer { isRefreshing = false }
 
         await withTaskGroup(of: Void.self) { group in
-            group.addTask { [catalogViewModel] in await catalogViewModel.refreshConnection() }
+            group.addTask { [catalogViewModel] in await catalogViewModel.refreshDiscovery() }
             group.addTask { [catalogViewModel] in await catalogViewModel.refreshCatalog() }
             group.addTask { [zenBalanceViewModel] in await zenBalanceViewModel.refresh() }
             group.addTask { [goUsageViewModel] in await goUsageViewModel.refresh() }

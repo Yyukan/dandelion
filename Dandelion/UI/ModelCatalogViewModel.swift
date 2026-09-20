@@ -2,21 +2,28 @@
 //  ModelCatalogViewModel.swift
 //  Dandelion
 //
-//  Drives ModelCatalogView: discovers/validates the local API keys and
-//  loads the merged Zen + Go pricing/limit catalog.
+//  Drives ModelCatalogView: discovers the local API keys and loads the
+//  merged Zen + Go pricing/limit catalog.
 //
 
 import Foundation
 import Observation
 
-/// Connection state for the locally discovered OpenCode credentials.
+/// Whether OpenCode credentials exist locally.
+///
+/// This is only about *existence*: nothing here pings a stored key any more,
+/// because each key's validity is already reported by the surface that uses it
+/// - the Go usage card's own live fetch of `/zen/go/v1/usage` (accepted vs
+/// 401/403) and the Zen balance card's console-session state. OpenCode now
+/// refuses free-tier models to non-OpenCode clients
+/// (`FreeTierError`), so the old zero-cost completion ping that used to prove a
+/// key worked can no longer be used for this.
 enum CredentialConnectionState: Equatable {
     case checking
     /// No `opencode` / `opencode-go` entry found in `auth.json`.
     case disconnected
-    /// At least one credential was found; each flag is `nil` while validation
-    /// for that surface hasn't completed yet.
-    case connected(zenValid: Bool?, goValid: Bool?)
+    /// At least one credential was found.
+    case connected
 }
 
 enum CatalogSortOption: String, CaseIterable, Identifiable, Sendable {
@@ -73,16 +80,13 @@ final class ModelCatalogViewModel {
     }
 
     private let authService: AuthDiscoveryService
-    private let validationService: KeyValidationService
     private let catalogService: ModelCatalogService
 
     init(
         authService: AuthDiscoveryService = AuthDiscoveryService(),
-        validationService: KeyValidationService = KeyValidationService(),
         catalogService: ModelCatalogService = ModelCatalogService()
     ) {
         self.authService = authService
-        self.validationService = validationService
         self.catalogService = catalogService
     }
 
@@ -139,32 +143,18 @@ final class ModelCatalogViewModel {
         lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
     }
 
-    /// Runs credential discovery/validation and the catalog load in parallel
-    /// on first appearance.
+    /// Runs credential discovery and the catalog load in parallel on first
+    /// appearance.
     func loadInitial() async {
-        async let connection: Void = refreshConnection()
+        async let connection: Void = refreshDiscovery()
         async let catalog: Void = refreshCatalog()
         _ = await (connection, catalog)
     }
 
-    func refreshConnection() async {
-        let credentials = authService.discoverCredentials()
-        guard !credentials.isEmpty else {
-            connectionState = .disconnected
-            return
-        }
-
-        connectionState = .connected(zenValid: nil, goValid: nil)
-
-        for credential in credentials {
-            let isValid = await validationService.validate(credential) == .valid
-            guard case .connected(var zenValid, var goValid) = connectionState else { continue }
-            switch credential.provider {
-            case .zen: zenValid = isValid
-            case .go: goValid = isValid
-            }
-            connectionState = .connected(zenValid: zenValid, goValid: goValid)
-        }
+    /// Reads `auth.json` and decides between showing the catalog and showing
+    /// the connect instructions. No request is made and no key is pinged.
+    func refreshDiscovery() async {
+        connectionState = authService.discoverCredentials().isEmpty ? .disconnected : .connected
     }
 
     func refreshCatalog(forceRefresh: Bool = false) async {

@@ -27,7 +27,6 @@ To install a Release build into `/Applications` and launch it, use `./install.sh
 ## Git / commits
 
 - Stage changes (`git add`) but do not commit or push unless explicitly asked to.
-- When asked to commit, add Junie as co-author: `git commit --trailer "Co-authored-by: Junie <junie@jetbrains.com>"`.
 - Do not push unless explicitly asked.
 
 ## Style
