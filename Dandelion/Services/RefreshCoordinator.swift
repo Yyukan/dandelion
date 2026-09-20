@@ -40,9 +40,15 @@ final class RefreshCoordinator {
     }
 
     /// Runs credential discovery, the (cache-respecting) catalog refresh, the
-    /// live Zen balance and the live Go usage fetch all in parallel. The Zen/Go
-    /// results are also what prove the stored keys work - there is no separate
-    /// validation request any more.
+    /// live Zen balance and the live Go usage fetch all in parallel.
+    ///
+    /// The Go fetch is the only thing here that verifies a stored key: it sends
+    /// the discovered `opencode-go` key to `/zen/go/v1/usage` on every refresh,
+    /// so a rejected key surfaces in the Go card's `.sessionExpired` state. The
+    /// Zen card authenticates with a browser session cookie instead and never
+    /// uses the stored Zen API key, so that key's validity is not checked
+    /// anywhere - `refreshDiscovery()` only reports that an entry exists.
+    ///
     /// A refresh already in flight is never duplicated.
     func refreshNow() async {
         guard !isRefreshing else { return }

@@ -12,8 +12,16 @@ import Foundation
 struct OpenCodeCredential: Sendable, Equatable {
     enum Provider: String, Sendable {
         /// Entry name OpenCode stores for the pay-as-you-go Zen surface.
+        ///
+        /// Discovered for completeness only - nothing in the app sends this
+        /// key. The Zen surface authenticates with a browser session cookie
+        /// instead (see `CookieDiscoveryService`), so this key's validity is
+        /// never checked.
         case zen = "opencode"
         /// Entry name OpenCode stores for the Go subscription surface.
+        ///
+        /// Actively used: `UsageService.fetchGoUsage` sends it to
+        /// `/zen/go/v1/usage` on every refresh, which is what verifies it.
         case go = "opencode-go"
     }
 

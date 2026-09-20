@@ -11,13 +11,19 @@ import Observation
 
 /// Whether OpenCode credentials exist locally.
 ///
-/// This is only about *existence*: nothing here pings a stored key any more,
-/// because each key's validity is already reported by the surface that uses it
-/// - the Go usage card's own live fetch of `/zen/go/v1/usage` (accepted vs
-/// 401/403) and the Zen balance card's console-session state. OpenCode now
-/// refuses free-tier models to non-OpenCode clients
-/// (`FreeTierError`), so the old zero-cost completion ping that used to prove a
-/// key worked can no longer be used for this.
+/// Existence only, and it only ever was that: the old validation ping answered
+/// "does this key work?" for both surfaces, but OpenCode now refuses free-tier
+/// models to non-OpenCode clients (`FreeTierError`) and no free endpoint
+/// authenticates a key, so the ping was removed rather than re-pointed.
+///
+/// What verifies a key today:
+/// - **Go** - the Go usage card sends the stored `opencode-go` key to
+///   `/zen/go/v1/usage` on every refresh and a rejected key lands in its
+///   `.sessionExpired` state. That is a real check.
+/// - **Zen** - nothing. The Zen card authenticates with a browser session
+///   cookie (`CookieDiscoveryService`) and never uses the stored `opencode` API
+///   key, so for Zen this state means only "an entry exists in `auth.json`" -
+///   it says nothing about whether that key is still valid.
 enum CredentialConnectionState: Equatable {
     case checking
     /// No `opencode` / `opencode-go` entry found in `auth.json`.
@@ -153,6 +159,10 @@ final class ModelCatalogViewModel {
 
     /// Reads `auth.json` and decides between showing the catalog and showing
     /// the connect instructions. No request is made and no key is pinged.
+    ///
+    /// Synchronous work (one file read) despite the `async`: it is declared
+    /// this way so the refresh coordinator can run it inside the same TaskGroup
+    /// as the real fetches.
     func refreshDiscovery() async {
         connectionState = authService.discoverCredentials().isEmpty ? .disconnected : .connected
     }
