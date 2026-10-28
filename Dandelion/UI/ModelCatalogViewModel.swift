@@ -17,13 +17,12 @@ import Observation
 /// authenticates a key, so the ping was removed rather than re-pointed.
 ///
 /// What verifies a key today:
-/// - **Go** - the Go usage card sends the stored `opencode-go` key to
-///   `/zen/go/v1/usage` on every refresh and a rejected key lands in its
-///   `.sessionExpired` state. That is a real check.
-/// - **Zen** - nothing. The Zen card authenticates with a browser session
-///   cookie (`CookieDiscoveryService`) and never uses the stored `opencode` API
-///   key, so for Zen this state means only "an entry exists in `auth.json`" -
-///   it says nothing about whether that key is still valid.
+/// - **Zen** - the balance card sends the discovered key to
+///   `/console/api/billing/status` on every refresh; a rejected key lands in
+///   the Zen card's `.unauthorized` state.
+/// - **Go** - the usage card sends the `opencode-go` key to
+///   `/inference/go/v1/usage`; a rejected key lands in the Go card's
+///   `.unauthorized` state.
 enum CredentialConnectionState: Equatable {
     case checking
     /// No `opencode` / `opencode-go` entry found in `auth.json`.

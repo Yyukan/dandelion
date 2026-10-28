@@ -3,8 +3,8 @@
 //  Dandelion
 //
 //  Live Zen balance ring, auto-reload threshold and monthly limit info,
-//  discovered automatically from the user's browser session - with a
-//  graceful fallback state when discovery/the private endpoint fails.
+//  read with the API key discovered in auth.json - with a graceful fallback
+//  state when no key exists or the console API fails.
 //
 
 import SwiftUI
@@ -29,10 +29,14 @@ struct ZenBalanceCard: View {
                     .frame(maxWidth: .infinity, alignment: .center)
             case .loaded(let balance):
                 loadedContent(balance)
+            case .needsKey:
+                UnavailableStateView(
+                    detail: "No OpenCode key found. Run `opencode /connect` once, then refresh."
+                )
+            case .unauthorized:
+                UnauthorizedStateView(consoleURL: URL(string: "https://opencode.ai/console/")!)
             case .unavailable:
-                UnavailableStateView()
-            case .sessionExpired:
-                SessionExpiredStateView(consoleURL: URL(string: "https://opencode.ai/console/")!)
+                UnavailableStateView(detail: "Couldn't reach the console - check your connection.")
             }
         }
         .task { await viewModel.refresh() }
@@ -79,9 +83,11 @@ struct ZenBalanceCard: View {
     }
 }
 
-/// Shown when browser cookie discovery or the private endpoint fails -
-/// never blocks the rest of the dashboard, just links out to the real console.
+/// Shown when no key was discovered or the request failed - never blocks the
+/// rest of the dashboard, just links out to the real console.
 private struct UnavailableStateView: View {
+    var detail: String
+
     var body: some View {
         VStack(alignment: .leading, spacing: TerminalTheme.Spacing.xs) {
             HStack(spacing: TerminalTheme.Spacing.sm) {
@@ -89,7 +95,7 @@ private struct UnavailableStateView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Balance unavailable")
                         .font(TerminalTheme.Fonts.body.weight(.semibold))
-                    Text("Sign in to the OpenCode console in your browser, then refresh.")
+                    Text(detail)
                         .font(TerminalTheme.Fonts.caption)
                         .foregroundStyle(TerminalTheme.Colors.textSecondary)
                     Link("Open Console", destination: URL(string: "https://opencode.ai/console/")!)
@@ -101,18 +107,18 @@ private struct UnavailableStateView: View {
     }
 }
 
-/// Shown when a cookie was found but the endpoint no longer recognizes it -
-/// most likely the browser session has expired since it was discovered.
-private struct SessionExpiredStateView: View {
+/// Shown when a key was found but the console rejected it - most likely the
+/// key was revoked or rotated since it was written.
+private struct UnauthorizedStateView: View {
     let consoleURL: URL
 
     var body: some View {
         HStack(spacing: TerminalTheme.Spacing.sm) {
             RingGaugeView(progress: 0, valueText: "—", label: "Balance", tint: TerminalTheme.Colors.textTertiary, size: 72, lineWidth: 3)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Session expired")
+                Text("API key rejected")
                     .font(TerminalTheme.Fonts.body.weight(.semibold))
-                Text("Console session expired - sign in again, then refresh.")
+                Text("OpenCode refused the saved key. Run `opencode /connect` again, then refresh.")
                     .font(TerminalTheme.Fonts.caption)
                     .foregroundStyle(TerminalTheme.Colors.textSecondary)
                 Link("Open Console", destination: consoleURL)
@@ -124,7 +130,7 @@ private struct SessionExpiredStateView: View {
 }
 
 #Preview {
-    ZenBalanceCard(viewModel: ZenBalanceViewModel(appSettings: AppSettings()))
+    ZenBalanceCard(viewModel: ZenBalanceViewModel())
         .padding()
         .frame(width: TerminalTheme.Metrics.panelWidth)
         .background(TerminalTheme.Colors.background)

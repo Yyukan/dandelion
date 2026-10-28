@@ -13,10 +13,8 @@ struct OpenCodeCredential: Sendable, Equatable {
     enum Provider: String, Sendable {
         /// Entry name OpenCode stores for the pay-as-you-go Zen surface.
         ///
-        /// Discovered for completeness only - nothing in the app sends this
-        /// key. The Zen surface authenticates with a browser session cookie
-        /// instead (see `CookieDiscoveryService`), so this key's validity is
-        /// never checked.
+        /// Used first for the console billing call that produces the Zen
+        /// balance; a Go-only install falls back to the `opencode-go` key.
         case zen = "opencode"
         /// Entry name OpenCode stores for the Go subscription surface.
         ///

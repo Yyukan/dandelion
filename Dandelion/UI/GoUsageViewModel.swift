@@ -3,8 +3,8 @@
 //  Dandelion
 //
 //  Drives GoUsageCard from OpenCode's official usage API
-//  (https://opencode.ai/zen/go/v1/usage), authenticated with the locally
-//  discovered `opencode-go` API key - no browser session needed.
+//  (https://opencode.ai/inference/go/v1/usage), authenticated with the
+//  `opencode-go` key discovered in auth.json - no browser session needed.
 //
 
 import Foundation
@@ -14,12 +14,13 @@ import Observation
 enum GoUsageState: Equatable {
     case loading
     case loaded(GoUsageSummary)
-    /// No Go API key could be found locally - show the "connect Go" hint
-    /// instead of crashing or blocking the rest of the UI.
+    /// No `opencode-go` key in auth.json - show the "connect Go" hint.
+    case needsKey
+    /// A key was found, but the endpoint rejected it - revoked or rotated, or
+    /// the account has no Go subscription.
+    case unauthorized
+    /// No credential problem: the request failed or the payload was unusable.
     case unavailable
-    /// A key was found, but the endpoint rejected it - the key was revoked
-    /// or rotated and OpenCode needs reconnecting.
-    case sessionExpired
 }
 
 @MainActor
@@ -28,13 +29,8 @@ final class GoUsageViewModel {
     private(set) var state: GoUsageState = .loading
 
     private let usageService: UsageService
-    private let appSettings: AppSettings
 
-    init(
-        appSettings: AppSettings,
-        usageService: UsageService = UsageService()
-    ) {
-        self.appSettings = appSettings
+    init(usageService: UsageService = UsageService()) {
         self.usageService = usageService
     }
 
@@ -42,18 +38,14 @@ final class GoUsageViewModel {
         state = .loading
 
         do {
-            let workspaceOverride = appSettings.manualWorkspaceID
-            let usage = try await usageService.fetchGoUsage(
-                workspaceIDOverride: workspaceOverride.isEmpty ? nil : workspaceOverride
-            )
-            state = .loaded(usage)
+            state = .loaded(try await usageService.fetchGoUsage())
         } catch let error as UsageServiceError {
             switch error {
-            case .sessionExpired:
-                // The key was rejected upstream: revoked, rotated, or the
-                // account has no Go subscription.
-                state = .sessionExpired
-            case .workspaceNotFound, .balanceNotFound, .goUsageNotFound, .missingGoAPIKey, .network:
+            case .missingAPIKey:
+                state = .needsKey
+            case .unauthorized:
+                state = .unauthorized
+            case .balanceNotFound, .goUsageNotFound, .network:
                 state = .unavailable
             }
         } catch {

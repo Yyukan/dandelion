@@ -20,9 +20,7 @@
 		72F3EA67091C54B2F7FC56C6 /* ModelCatalogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFCDF56133A5E949D92164B1 /* ModelCatalogService.swift */; };
 		84B05A6A1B2B6E6256F93DF7 /* DashboardPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B329A6802E36280172A28579 /* DashboardPanel.swift */; };
 		938426F73B702B8E62631E24 /* DandelionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0B65FE662895428D19727E /* DandelionApp.swift */; };
-		98CDFE9B133B01D9BC8C719A /* CookieOverrideStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B0FCBFC49F471DDCFE504F0 /* CookieOverrideStore.swift */; };
 		9E09A1C1B64DF996105D970A /* ModelCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36C8BA2D7D6D69954B99F30 /* ModelCatalogView.swift */; };
-		9FD4D326A72E00A78B2C79E0 /* CookieDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3834C36B0F80DEFCED5D226 /* CookieDiscoveryService.swift */; };
 		A609855C4796E330A8D6F51A /* RingGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FC8D657BE6C75ACDB232ACB /* RingGaugeView.swift */; };
 		B468B6227699EA6E073BAB01 /* ModelCatalogViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD2262C98E6BA4AAE3FA2EF7 /* ModelCatalogViewModel.swift */; };
 		C2F85C32D9FAE0D188360894 /* AuthDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */; };
@@ -43,7 +41,6 @@
 		1F815E92B652911639F9320A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthDiscoveryService.swift; sourceTree = "<group>"; };
 		3A0B65FE662895428D19727E /* DandelionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DandelionApp.swift; sourceTree = "<group>"; };
-		3B0FCBFC49F471DDCFE504F0 /* CookieOverrideStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieOverrideStore.swift; sourceTree = "<group>"; };
 		4164C386CD52D532547A2394 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		45BB514A4704875592D111DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		52E7DC803AC43CE91B72F6F4 /* CatalogModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogModel.swift; sourceTree = "<group>"; };
@@ -59,7 +56,6 @@
 		B329A6802E36280172A28579 /* DashboardPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardPanel.swift; sourceTree = "<group>"; };
 		B5E4A58143CD99971CD1761A /* RefreshCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshCoordinator.swift; sourceTree = "<group>"; };
 		C2147BB94591BDE0E70B7D85 /* ZenBalanceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenBalanceCard.swift; sourceTree = "<group>"; };
-		C3834C36B0F80DEFCED5D226 /* CookieDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieDiscoveryService.swift; sourceTree = "<group>"; };
 		CD2262C98E6BA4AAE3FA2EF7 /* ModelCatalogViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalogViewModel.swift; sourceTree = "<group>"; };
 		E36C8BA2D7D6D69954B99F30 /* ModelCatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalogView.swift; sourceTree = "<group>"; };
 		FFCDF56133A5E949D92164B1 /* ModelCatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalogService.swift; sourceTree = "<group>"; };
@@ -150,8 +146,6 @@
 			children = (
 				8663CA994121E94C78CA796E /* AppSettings.swift */,
 				2175D8E4B9FA3EFF65CCFEC8 /* AuthDiscoveryService.swift */,
-				C3834C36B0F80DEFCED5D226 /* CookieDiscoveryService.swift */,
-				3B0FCBFC49F471DDCFE504F0 /* CookieOverrideStore.swift */,
 				FFCDF56133A5E949D92164B1 /* ModelCatalogService.swift */,
 				B5E4A58143CD99971CD1761A /* RefreshCoordinator.swift */,
 				11D9AF622BACAAFEBD3C488A /* UsageService.swift */,
@@ -246,8 +240,6 @@
 				6F9BFFDE085BD01BF31D1505 /* AppSettings.swift in Sources */,
 				C2F85C32D9FAE0D188360894 /* AuthDiscoveryService.swift in Sources */,
 				E6E1BD19248D19055267CA23 /* CatalogModel.swift in Sources */,
-				9FD4D326A72E00A78B2C79E0 /* CookieDiscoveryService.swift in Sources */,
-				98CDFE9B133B01D9BC8C719A /* CookieOverrideStore.swift in Sources */,
 				938426F73B702B8E62631E24 /* DandelionApp.swift in Sources */,
 				84B05A6A1B2B6E6256F93DF7 /* DashboardPanel.swift in Sources */,
 				032B873F97A406E9F621C7E5 /* GoUsageCard.swift in Sources */,

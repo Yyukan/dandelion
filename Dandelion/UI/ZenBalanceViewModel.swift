@@ -2,9 +2,9 @@
 //  ZenBalanceViewModel.swift
 //  Dandelion
 //
-//  Drives ZenBalanceCard: discovers a browser session cookie and uses it to
-//  fetch the live Zen balance, degrading gracefully when discovery or the
-//  private endpoint fails.
+//  Drives ZenBalanceCard from the console's billing JSON API, authenticated
+//  with the API key discovered in auth.json - no browser session, no cookie -
+//  degrading gracefully when no key exists or the endpoint fails.
 //
 
 import Foundation
@@ -14,12 +14,12 @@ import Observation
 enum ZenBalanceState: Equatable {
     case loading
     case loaded(ZenBalance)
-    /// No session cookie could be found at all - show "—" + a link to the
-    /// real console instead of crashing or blocking the rest of the UI.
+    /// No `opencode` / `opencode-go` key in auth.json - point at OpenCode.
+    case needsKey
+    /// A key was found, but the console rejected it - revoked or rotated.
+    case unauthorized
+    /// No credential problem: the request failed or the payload was unusable.
     case unavailable
-    /// A cookie was found, but the endpoint no longer recognizes it - most
-    /// likely the browser session has expired and needs a fresh login.
-    case sessionExpired
 }
 
 @MainActor
@@ -27,50 +27,24 @@ enum ZenBalanceState: Equatable {
 final class ZenBalanceViewModel {
     private(set) var state: ZenBalanceState = .loading
 
-    private let cookieDiscoveryService: CookieDiscoveryService
     private let usageService: UsageService
-    private let appSettings: AppSettings
 
-    init(
-        appSettings: AppSettings,
-        cookieDiscoveryService: CookieDiscoveryService = CookieDiscoveryService(),
-        usageService: UsageService = UsageService()
-    ) {
-        self.appSettings = appSettings
-        self.cookieDiscoveryService = cookieDiscoveryService
+    init(usageService: UsageService = UsageService()) {
         self.usageService = usageService
     }
 
     func refresh() async {
         state = .loading
 
-        // Cookie discovery does blocking disk/Keychain I/O, so it runs off
-        // the main actor to keep the panel responsive while it works.
-        let discoveryService = cookieDiscoveryService
-        let cookie = await Task.detached(priority: .userInitiated) {
-            discoveryService.discoverSessionCookie()
-        }.value
-
-        guard let cookie else {
-            state = .unavailable
-            return
-        }
-
         do {
-            let workspaceOverride = appSettings.manualWorkspaceID
-            let balance = try await usageService.fetchZenBalance(
-                cookie: cookie,
-                workspaceIDOverride: workspaceOverride.isEmpty ? nil : workspaceOverride
-            )
-            state = .loaded(balance)
+            state = .loaded(try await usageService.fetchZenBalance())
         } catch let error as UsageServiceError {
             switch error {
-            case .workspaceNotFound, .balanceNotFound, .sessionExpired:
-                // A cookie was found, but the console rejected it or its
-                // payload was unusable - the most likely cause is that the
-                // browser session behind it has since expired.
-                state = .sessionExpired
-            case .goUsageNotFound, .missingGoAPIKey, .network:
+            case .missingAPIKey:
+                state = .needsKey
+            case .unauthorized:
+                state = .unauthorized
+            case .balanceNotFound, .goUsageNotFound, .network:
                 state = .unavailable
             }
         } catch {

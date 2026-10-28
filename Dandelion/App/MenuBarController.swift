@@ -22,8 +22,8 @@ final class MenuBarController: NSObject {
 
     private let appSettings = AppSettings()
     private let catalogViewModel = ModelCatalogViewModel()
-    private lazy var zenBalanceViewModel = ZenBalanceViewModel(appSettings: appSettings)
-    private lazy var goUsageViewModel = GoUsageViewModel(appSettings: appSettings)
+    private lazy var zenBalanceViewModel = ZenBalanceViewModel()
+    private lazy var goUsageViewModel = GoUsageViewModel()
     private lazy var refreshCoordinator = RefreshCoordinator(
         appSettings: appSettings,
         catalogViewModel: catalogViewModel,

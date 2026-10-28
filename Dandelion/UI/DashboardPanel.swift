@@ -121,8 +121,8 @@ private struct FooterButton: View {
 #Preview {
     let appSettings = AppSettings()
     let catalogViewModel = ModelCatalogViewModel()
-    let zenBalanceViewModel = ZenBalanceViewModel(appSettings: appSettings)
-    let goUsageViewModel = GoUsageViewModel(appSettings: appSettings)
+    let zenBalanceViewModel = ZenBalanceViewModel()
+    let goUsageViewModel = GoUsageViewModel()
     return DashboardPanel(
         appSettings: appSettings,
         catalogViewModel: catalogViewModel,

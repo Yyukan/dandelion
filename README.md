@@ -64,8 +64,8 @@ open ~/Library/Developer/Xcode/DerivedData/Dandelion-*/Build/Products/Debug/Dand
 
 ### First-run permissions
 
-- **Zen/Go catalog, key validation and Go usage** work immediately as long as `auth.json` has your keys - no extra permission prompts.
-- **Live Zen balance** reads the console's JSON API (the 2026-09 "OpenCode Console" rewrite moved off the old page scraping), so it needs the browser's `__Host-console_session` cookie: Chromium-based browsers (Chrome/Brave/Arc/Edge) prompt for Keychain access to decrypt cookies. Sign in at https://opencode.ai/console/ if the balance shows "Session expired".
+- **Everything** - catalog, live Zen balance and live Go usage - works straight from `~/.local/share/opencode/auth.json` with no permission prompts: the balance and usage cards authenticate with the API keys OpenCode already wrote there, so there is no browser session to unlock and no cookie to decrypt.
+- Run `opencode /connect` (or paste a key in OpenCode) if a card says **No OpenCode key found**; rotate the key and refresh if it says **API key rejected**.
 
 ## Installing
 

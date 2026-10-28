@@ -2,51 +2,50 @@
 //  UsageService.swift
 //  Dandelion
 //
-//  Reads live Zen credit and OpenCode Go usage from OpenCode's *new*
-//  console (the 2026-09 "OpenCode Console" rewrite), replacing the old
-//  workspace-page HTML scraping:
+//  Reads live Zen credit and OpenCode Go usage. Both surfaces authenticate
+//  with an API key discovered from `~/.local/share/opencode/auth.json` - no
+//  browser session, no cookies, no scraping:
 //
-//  - Zen balance comes from the console's JSON API, authenticated by the
-//    browser's `__Host-console_session` cookie plus an `x-org-id` header:
+//  - Zen balance comes from the console's JSON API:
 //        GET https://opencode.ai/console/api/billing/status
 //        GET https://opencode.ai/console/api/billing/auto-recharge
-//        GET https://opencode.ai/console/api/orgs           (org discovery)
+//        Authorization: Bearer <opencode key>
 //    Money is `*MicroCents`, as strings, at 1e8 per dollar (verified live:
 //    505700511 renders as "$5.06" in the console).
+//    The billing endpoints resolve the workspace from the key itself, so no
+//    org id and no `x-org-id` header are needed (`/console/api/orgs` still
+//    refuses API keys with 401, but it isn't used any more).
 //
-//  - Go usage no longer needs a browser session at all: OpenCode publishes an
-//    official, API-key-authenticated endpoint (added 2026-08-11):
-//        GET https://opencode.ai/zen/go/v1/usage
+//  - Go usage uses OpenCode's documented endpoint:
+//        GET https://opencode.ai/inference/go/v1/usage
 //        Authorization: Bearer <opencode-go key>
 //    returning `{rolling,weekly,monthly}` percentages with absolute reset
-//    timestamps - verified live against a real account.
+//    timestamps.
 //
-//  Both surfaces are undocumented and can change on any opencode.ai
-//  redeploy, so every failure throws (callers show the graceful fallback
-//  state) rather than returning stale/zeroed data.
+//  Every failure throws (callers show the graceful fallback state) rather than
+//  returning stale/zeroed data.
 //
 
 import Foundation
 
 enum UsageServiceError: Error, Sendable, Equatable {
-    /// No org id could be resolved for the signed-in account.
-    case workspaceNotFound
+    /// No `opencode` / `opencode-go` key found in auth.json.
+    case missingAPIKey
+    /// The key was rejected upstream (401/403): revoked, rotated, or not valid
+    /// for that surface.
+    case unauthorized
     /// The console answered, but the billing payload had no usable balance.
     case balanceNotFound
-    /// The Go usage endpoint answered, but the payload had no usable windows.
+    /// The usage endpoint answered, but the payload had no usable windows.
     case goUsageNotFound
-    /// The console rejected the session cookie (needs a fresh browser login).
-    case sessionExpired
-    /// No OpenCode Go API key was found locally; Go usage needs one.
-    case missingGoAPIKey
     case network
 }
 
 actor UsageService {
     /// Console JSON API, exactly as the console web app calls it.
     private static let consoleAPIBase = URL(string: "https://opencode.ai/console/api")!
-    /// Official Go subscription usage endpoint (API-key authenticated).
-    private static let goUsageURL = URL(string: "https://opencode.ai/zen/go/v1/usage")!
+    /// Documented Go subscription usage endpoint (API-key authenticated).
+    private static let goUsageURL = URL(string: "https://opencode.ai/inference/go/v1/usage")!
 
     /// Console money fields are micro-cents: one hundred million per dollar
     /// (confirmed live - 505700511 == $5.06).
@@ -62,21 +61,42 @@ actor UsageService {
 
     // MARK: - Zen balance
 
-    /// Resolves the account's org id, then reads its billing status (plus
-    /// auto-recharge settings) to build a `ZenBalance`. Throws on any failure
-    /// so callers can show the graceful fallback state.
+    /// Reads the account's billing status (plus auto-recharge settings) to
+    /// build a `ZenBalance`.
     ///
-    /// - Parameter workspaceIDOverride: skips org discovery when set - the
-    ///   manual fallback Settings exposes.
-    func fetchZenBalance(cookie: SessionCookie, workspaceIDOverride: String? = nil) async throws -> ZenBalance {
-        let orgID = try await resolveOrgID(cookie: cookie, override: workspaceIDOverride)
+    /// Tries the pay-as-you-go `opencode` key first and falls back to the
+    /// `opencode-go` key: both belong to the same account and the console
+    /// accepts either, so a Go-only install still shows a balance.
+    func fetchZenBalance() async throws -> ZenBalance {
+        let credentials = authDiscovery.discoverCredentials()
+        guard !credentials.isEmpty else { throw UsageServiceError.missingAPIKey }
 
+        // Zen key first, then Go - stable order, one attempt each.
+        let ordered = credentials.filter { $0.provider == .zen }
+            + credentials.filter { $0.provider == .go }
+
+        var lastError: UsageServiceError = .unauthorized
+        for credential in ordered {
+            do {
+                return try await fetchZenBalance(apiKey: credential.apiKey)
+            } catch let error as UsageServiceError {
+                lastError = error
+                // A rejected key is worth retrying with the other one; a
+                // network or payload failure is not.
+                if case .unauthorized = error { continue }
+                throw error
+            }
+        }
+        throw lastError
+    }
+
+    private func fetchZenBalance(apiKey: String) async throws -> ZenBalance {
         let status: BillingStatus = try await getJSON(
-            path: "/billing/status", cookie: cookie, orgID: orgID, as: BillingStatus.self
+            path: "/billing/status", apiKey: apiKey, as: BillingStatus.self
         )
         // Auto-recharge is context only: never fail the balance over it.
         let autoRecharge: AutoRecharge? = try? await getJSON(
-            path: "/billing/auto-recharge", cookie: cookie, orgID: orgID, as: AutoRecharge.self
+            path: "/billing/auto-recharge", apiKey: apiKey, as: AutoRecharge.self
         )
 
         guard let rawMicroCents = status.availableMicroCents ?? status.balanceMicroCents,
@@ -93,7 +113,7 @@ actor UsageService {
             monthlyLimitUSD: status.creditLimitMicroCents
                 .flatMap(Double.init)
                 .map { $0 / Self.microCentsPerDollar },
-            // The console's billing payload no longer reports month-to-date
+            // The console's billing payload does not report month-to-date
             // spend alongside the limit, so this stays empty rather than
             // showing an unrelated (30-day) usage figure.
             monthlyUsageUSD: nil
@@ -102,14 +122,12 @@ actor UsageService {
 
     // MARK: - Go usage
 
-    /// Reads the Go subscription's 5h/weekly/monthly windows from OpenCode's
-    /// official API. Needs a locally discovered `opencode-go` key; no browser
-    /// session is involved.
-    func fetchGoUsage(workspaceIDOverride _: String? = nil) async throws -> GoUsageSummary {
+    /// Reads the Go subscription's 5h/weekly/monthly windows.
+    func fetchGoUsage() async throws -> GoUsageSummary {
         guard let apiKey = authDiscovery.discoverCredentials()
             .first(where: { $0.provider == .go })?.apiKey
         else {
-            throw UsageServiceError.missingGoAPIKey
+            throw UsageServiceError.missingAPIKey
         }
 
         var request = URLRequest(url: Self.goUsageURL)
@@ -140,35 +158,18 @@ actor UsageService {
         )
     }
 
-    // MARK: - Console plumbing
-
-    private func resolveOrgID(cookie: SessionCookie, override: String?) async throws -> String {
-        if let override, !override.isEmpty {
-            return override
-        }
-        let orgs: [ConsoleOrg] = try await getJSON(path: "/orgs", cookie: cookie, orgID: nil, as: [ConsoleOrg].self)
-        guard let orgID = orgs.first?.id, !orgID.isEmpty else {
-            throw UsageServiceError.workspaceNotFound
-        }
-        return orgID
-    }
+    // MARK: - Plumbing
 
     private func getJSON<T: Decodable>(
         path: String,
-        cookie: SessionCookie,
-        orgID: String?,
+        apiKey: String,
         as type: T.Type
     ) async throws -> T {
         var request = URLRequest(url: Self.consoleAPIBase.appendingPathComponent(path))
         request.timeoutInterval = 15
-        request.setValue("__Host-console_session=\(cookie.value)", forHTTPHeaderField: "Cookie")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Mozilla/5.0 (Dandelion)", forHTTPHeaderField: "User-Agent")
-        if let orgID {
-            // The console API requires the active workspace on every
-            // org-scoped call ("x-org-id is required" without it).
-            request.setValue(orgID, forHTTPHeaderField: "x-org-id")
-        }
 
         let data = try await perform(request)
         guard let decoded = try? Self.decoder.decode(T.self, from: data) else {
@@ -192,8 +193,8 @@ actor UsageService {
         case 200..<300:
             return data
         case 401, 403:
-            // Session cookie / API key no longer accepted.
-            throw UsageServiceError.sessionExpired
+            // The API key is no longer accepted.
+            throw UsageServiceError.unauthorized
         default:
             throw UsageServiceError.network
         }
@@ -221,10 +222,6 @@ actor UsageService {
     }()
 
     // MARK: - Wire formats
-
-    private struct ConsoleOrg: Decodable {
-        let id: String
-    }
 
     private struct BillingStatus: Decodable {
         /// Micro-cents, as a string (100,000,000 per dollar).

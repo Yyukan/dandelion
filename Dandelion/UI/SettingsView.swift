@@ -82,8 +82,8 @@ struct SettingsView: View {
         refreshCoordinator: RefreshCoordinator(
             appSettings: appSettings,
             catalogViewModel: catalogViewModel,
-            zenBalanceViewModel: ZenBalanceViewModel(appSettings: appSettings),
-            goUsageViewModel: GoUsageViewModel(appSettings: appSettings)
+            zenBalanceViewModel: ZenBalanceViewModel(),
+            goUsageViewModel: GoUsageViewModel()
         )
     )
 }
