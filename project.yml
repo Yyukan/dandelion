@@ -37,8 +37,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: nl.ostconsultancy.Dandelion
         PRODUCT_NAME: Dandelion
-        MARKETING_VERSION: "0.5.1"
-        CURRENT_PROJECT_VERSION: "6"
+        MARKETING_VERSION: "0.6.0"
+        CURRENT_PROJECT_VERSION: "7"
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_EMIT_LOC_STRINGS: YES
         ENABLE_PREVIEWS: YES
