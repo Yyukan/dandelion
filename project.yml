@@ -24,8 +24,8 @@ targets:
       properties:
         LSUIElement: true
         CFBundleDisplayName: Dandelion
-        CFBundleShortVersionString: "0.5.1"
-        CFBundleVersion: "6"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleIconName: AppIcon
         NSHumanReadableCopyright: "Copyright © 2026 OST Consultancy"
     entitlements:
