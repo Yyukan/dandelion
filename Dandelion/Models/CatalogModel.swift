@@ -3,37 +3,62 @@
 //  Dandelion
 //
 //  Provider-agnostic catalog contracts, populated by ModelCatalogService from
-//  OpenCode's own sources: the `/zen|/zen/go/v1/models` endpoints say which
-//  models exist, and OpenCode's console docs pages supply the metadata.
+//  OpenCode's `/zen/v1/models` and `/zen/go/v1/models` endpoints, which carry
+//  each model's name, limits, prices and (Go) monthly allowance.
 //
 
 import Foundation
 
-/// Per-1M-token pricing for a model, as published on OpenCode's docs pages.
+/// Pricing for a model, as published by OpenCode's model endpoints.
 ///
-/// Both values are optional because the docs only price the models they list:
-/// `nil` means OpenCode hasn't published a price for that model (yet), which
-/// is different from `0` ("Free").
+/// Text prices are per 1M tokens. Every value is optional: `nil` means the
+/// endpoint publishes no such price for that model, which is different from
+/// `0` ("Free").
 struct ModelPricing: Codable, Sendable, Hashable {
     let inputPerM: Double?
     let outputPerM: Double?
+    let cacheReadPerM: Double?
+    let cacheWritePerM: Double?
+    /// Higher price tier above a context size, where the model has one.
+    let longContext: LongContextPricing?
+    /// Non-text models (audio/image) priced per unit instead of per token.
+    let unitPrice: UnitPrice?
 
-    /// The docs list the model without a price.
-    static let unpublished = ModelPricing(inputPerM: nil, outputPerM: nil)
+    /// The endpoint lists the model without any `cost`.
+    static let unpublished = ModelPricing(
+        inputPerM: nil, outputPerM: nil, cacheReadPerM: nil, cacheWritePerM: nil,
+        longContext: nil, unitPrice: nil
+    )
 
-    var isFree: Bool { inputPerM == 0 && outputPerM == 0 }
-    var isPublished: Bool { inputPerM != nil || outputPerM != nil }
+    var isFree: Bool { inputPerM == 0 && (outputPerM ?? 0) == 0 }
+    var isPublished: Bool { inputPerM != nil || outputPerM != nil || unitPrice != nil }
 }
 
-/// Estimated Go usage-window request counts for a model, as published in the
-/// "Usage limits" table on OpenCode's Go console docs page (the 5h/weekly/
-/// monthly limits are dollar-based, so the request count depends on the
-/// model's own price - this is the docs' own per-model estimate). Not
-/// available via any API.
-struct GoUsageLimits: Codable, Sendable, Hashable {
-    let requestsPer5h: Int
-    let requestsPerWeek: Int
-    let requestsPerMonth: Int
+/// The per-1M-token price that applies once the context exceeds `aboveTokens`.
+struct LongContextPricing: Codable, Sendable, Hashable {
+    let aboveTokens: Int
+    let inputPerM: Double?
+    let outputPerM: Double?
+}
+
+/// A flat price per unit, e.g. `$0.05` per `minute` of audio or per `image`.
+struct UnitPrice: Codable, Sendable, Hashable {
+    let price: Double
+    let unit: String
+}
+
+/// A Go model's monthly usage allowance in dollars, per Go plan, from the
+/// endpoint's `go.monthly_usage`.
+struct GoMonthlyAllowance: Codable, Sendable, Hashable {
+    let go: Double?
+    let goPlus: Double?
+    let goTeams: Double?
+}
+
+/// Input/output modalities, as the endpoint names them (`"text"`, `"image/png"`, …).
+struct ModelModalities: Codable, Sendable, Hashable {
+    let input: [String]
+    let output: [String]
 }
 
 /// Which OpenCode surface a catalog model belongs to.
@@ -51,10 +76,9 @@ enum CatalogProvider: String, Codable, Sendable, CaseIterable, Identifiable {
     }
 }
 
-/// A single model available on Zen or Go, with the metadata the docs publish
-/// for it. Models the docs don't cover are still listed (the official model
-/// endpoint says they exist) with the model ID as the display name and no
-/// price, rather than being hidden.
+/// A single model available on Zen or Go. Models the endpoint lists without a
+/// name or cost are still listed, with the model ID as the display name and
+/// no price, rather than being hidden.
 ///
 /// Note: `modelID` is not unique across providers on its own (several models,
 /// e.g. `glm-5.2`, are offered by both Zen and Go), so `id` combines provider +
@@ -64,8 +88,32 @@ struct CatalogModel: Codable, Sendable, Hashable, Identifiable {
     let displayName: String
     let provider: CatalogProvider
     let pricing: ModelPricing
-    /// Go-only estimated usage-window request counts; always `nil` for Zen.
-    var usageLimits: GoUsageLimits?
+    /// Go-only monthly dollar allowance per plan; always `nil` for Zen.
+    var goAllowance: GoMonthlyAllowance?
+    /// Go-only estimate of how many requests a 5-hour window allows, from the
+    /// console's Go page (the only place that publishes request counts).
+    var requestEstimate: GoRequestEstimate?
+    var family: String?
+    var description: String?
+    var contextLimit: Int?
+    var outputLimit: Int?
+    var modalities: ModelModalities?
+    /// Names of the capabilities the endpoint marks as supported.
+    var capabilities: [String] = []
+    var releaseDate: String?
+    var openWeights: Bool?
 
     var id: String { "\(provider.rawValue):\(modelID)" }
+}
+
+/// Request estimates for a Go model's rolling 5-hour window, per plan.
+///
+/// The model endpoints publish dollars, never request counts; these numbers
+/// come from the console's Go page table ("Est. requests / 5 hr"). `nil` means
+/// the console did not list that model (or the page could not be read).
+struct GoRequestEstimate: Codable, Sendable, Hashable {
+    var go: Int?
+    var goPlus: Int?
+    /// "∞" on the console page (free models) is stored as `-1`.
+    var isUnlimited: Bool = false
 }

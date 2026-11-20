@@ -22,6 +22,7 @@ To install a Release build into `/Applications` and launch it, use `./install.sh
 
 - Ring/circle gauges (`RingGaugeView`) are used by `GoUsageCard` and `ZenBalanceCard`. The view's own default `lineWidth` is `8`, but every call site explicitly overrides it to `3` - keep new call sites consistent with `lineWidth: 3` rather than relying on the default.
 - Every live-data widget (Zen balance, Go usage) must degrade gracefully to an `unavailable`/`sessionExpired` fallback state instead of crashing when discovery or the private endpoint fails - never assume the endpoint succeeds.
+- The model catalog (`ModelCatalogService`) reads only `https://opencode.ai/zen/v1/models` and `https://opencode.ai/zen/go/v1/models`; do not scrape `/docs/...` pages. Go limits are the monthly dollar allowance per plan (`go.monthly_usage`), never a request count. Bump `cacheFormatVersion` whenever `CatalogModel` changes.
 - Follow the existing SwiftUI file layout: header doc comment block, then `import SwiftUI`, main view struct, private helper views, `#Preview` at the bottom.
 
 ## Git / commits

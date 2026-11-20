@@ -2,9 +2,10 @@
 //  ModelCatalogView.swift
 //  Dandelion
 //
-//  Full, searchable Zen + Go model catalog: per-model input/output pricing,
-//  plus the Go-only 5h/weekly/monthly usage limits, and the disconnected-state
-//  UI shown when no local API key was found.
+//  Full, searchable Zen + Go model catalog: per-model input/output pricing
+//  (long-context tier and audio/image unit prices included), plus the Go-only
+//  monthly dollar allowance per plan, and the disconnected-state UI shown when
+//  no local API key was found.
 //
 
 import AppKit
@@ -86,8 +87,11 @@ struct ModelCatalogView: View {
                         .foregroundStyle(TerminalTheme.Colors.textTertiary)
                         .padding(.vertical, TerminalTheme.Spacing.md)
                 } else {
+                    let allowanceCeiling = viewModel.filteredModels
+                        .compactMap { $0.goAllowance?.largest }
+                        .max() ?? 0
                     ForEach(viewModel.filteredModels) { model in
-                        CatalogModelRow(model: model)
+                        CatalogModelRow(model: model, allowanceCeiling: allowanceCeiling)
                     }
                 }
             }
@@ -109,23 +113,28 @@ private struct DisconnectedStateView: View {
     }
 }
 
-/// A single catalog row: vendor icon, name, colorized in/out pricing, and
-/// (Go only) colorized usage-window limits. The model ID is never shown -
-/// it's the click-to-copy target instead, confirmed by a brief border flash.
+/// A single catalog row: vendor icon, name, colorized in/out pricing (plus
+/// any long-context tier), and (Go only) the colorized monthly allowance per
+/// plan. The model ID is never shown - it's the click-to-copy target instead,
+/// confirmed by a brief border flash.
 private struct CatalogModelRow: View {
     let model: CatalogModel
+    /// Largest Go plan allowance in the list, used to normalize its color.
+    let allowanceCeiling: Double
 
     @State private var justCopied = false
 
     var body: some View {
         HStack(spacing: TerminalTheme.Spacing.sm) {
             vendorIcon
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(model.displayName)
                     .font(TerminalTheme.Fonts.body.weight(.semibold))
                     .lineLimit(1)
-                if model.provider == .go, let usageLimits = model.usageLimits {
-                    usageLimitsRow(usageLimits)
+                if model.provider == .go {
+                    goLimitsRow
+                } else if let longContext = model.pricing.longContext {
+                    longContextRow(longContext)
                 }
             }
             // The name column must win the space before the trailing price
@@ -167,8 +176,12 @@ private struct CatalogModelRow: View {
     /// more compact than stacking them, and the slash reads like a ratio.
     private var priceStack: some View {
         Group {
-            if !model.pricing.isPublished {
-                // The docs don't price every model the API already serves.
+            if let unitPrice = model.pricing.unitPrice {
+                // Audio/image models are priced per minute/image, not per token.
+                Text(Self.unitPrice(unitPrice))
+                    .foregroundStyle(Self.priceColor(unitPrice.price, max: Self.maxInputPrice(model.provider)))
+            } else if !model.pricing.isPublished {
+                // The endpoint lists the model without any cost.
                 Text("—")
                     .foregroundStyle(TerminalTheme.Colors.textTertiary)
             } else if model.pricing.isFree {
@@ -188,32 +201,65 @@ private struct CatalogModelRow: View {
         .font(TerminalTheme.Fonts.caption)
     }
 
-    /// Go-only: estimated requests per 5h / week / month, from OpenCode's
-    /// docs usage-limits table, each colored on the same blue scale as
-    /// price - but inverted, since a *higher* request count is the "cheap"
-    /// (generous) end and a *lower* one is the "expensive" (scarce) end.
-    /// Icons stand in for the "5h"/"Week"/"Month" labels to keep the row compact.
-    private func usageLimitsRow(_ limits: GoUsageLimits) -> some View {
-        HStack(spacing: 4) {
-            usageSegment("clock", limits.requestsPer5h, max: Self.maxUsage5h)
-            dot
-            usageSegment("calendar", limits.requestsPerWeek, max: Self.maxUsageWeek)
-            dot
-            usageSegment("calendar.circle", limits.requestsPerMonth, max: Self.maxUsageMonth)
+    /// The higher per-1M price that applies above a context size, e.g.
+    /// ">100k ctx: $0.50 in / $2.50 out".
+    private func longContextRow(_ tier: LongContextPricing) -> some View {
+        Text(">\(Self.tokens(tier.aboveTokens)) ctx: \(Self.simplePrice(tier.inputPerM)) in / \(Self.simplePrice(tier.outputPerM)) out")
+            .font(TerminalTheme.Fonts.caption)
+            .foregroundStyle(TerminalTheme.Colors.textTertiary)
+            .lineLimit(1)
+    }
+
+    /// Go-only, one line: the three limit icons, exactly as OpenCode documents
+    /// them — the 5-hour limit is 20% of the monthly allowance, the weekly
+    /// limit is 50% (resets Monday 00:00 UTC), the monthly limit is 100%.
+    /// Kept deliberately terse: name, icons, price.
+    private var goLimitsRow: some View {
+        let monthly = model.goAllowance?.go
+        let unlimited = model.requestEstimate?.isUnlimited ?? false
+
+        func value(_ fraction: Double) -> String {
+            if unlimited { return "∞" }
+            guard let monthly else { return "—" }
+            return Self.money(monthly * fraction)
+        }
+
+        return HStack(spacing: 10) {
+            limitChip("clock", value(0.20), help: "5-hour limit — 20% of the monthly allowance")
+            limitChip("calendar", value(0.50), help: "Weekly limit — 50% of the monthly allowance, resets Monday 00:00 UTC")
+            limitChip("dollarsign.circle", value(1), help: "Monthly allowance for the Go plan")
         }
         .font(TerminalTheme.Fonts.caption)
+    }
+
+    private func limitChip(_ systemImage: String, _ value: String, help: String) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: systemImage)
+                .foregroundStyle(TerminalTheme.Colors.textTertiary)
+            Text(value)
+                .foregroundStyle(TerminalTheme.Colors.textSecondary)
+        }
+        .fixedSize()
+        .help(help)
+    }
+
+    /// 1040 -> "1,040"
+    private static func grouped(_ value: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter.string(from: NSNumber(value: value)) ?? String(value)
     }
 
     private var dot: some View {
         Text("·").foregroundStyle(TerminalTheme.Colors.textTertiary)
     }
 
-    private func usageSegment(_ systemImage: String, _ value: Int, max: Double) -> some View {
+    private func allowanceSegment(_ plan: String, _ dollars: Double) -> some View {
         HStack(spacing: 2) {
-            Image(systemName: systemImage)
+            Text(plan)
                 .foregroundStyle(TerminalTheme.Colors.textTertiary)
-            Text(Self.count(value))
-                .foregroundStyle(Self.limitColor(value, max: max))
+            Text(Self.money(dollars))
+                .foregroundStyle(Self.limitColor(dollars, max: allowanceCeiling))
                 .fixedSize()
         }
     }
@@ -243,21 +289,26 @@ private struct CatalogModelRow: View {
         provider == .zen ? 180 : 15
     }
 
-    /// Usage-window ceilings, from the current Go catalog's own extremes
-    /// (rounded up), used the same way to normalize the limit color.
-    private static let maxUsage5h = 32_000.0
-    private static let maxUsageWeek = 80_000.0
-    private static let maxUsageMonth = 160_000.0
-
     private static func simplePrice(_ value: Double?) -> String {
         guard let value else { return "—" }
         return "$" + String(format: "%.2f", value)
     }
 
-    private static func count(_ value: Int) -> String {
-        if value >= 1_000 {
-            return String(format: "%.0fK", Double(value) / 1_000)
-        }
+    /// "$0.05/min", "$0.01/image".
+    private static func unitPrice(_ unitPrice: UnitPrice) -> String {
+        let unit = unitPrice.unit == "minute" ? "min" : unitPrice.unit
+        return simplePrice(unitPrice.price) + "/" + unit
+    }
+
+    /// Whole dollars without cents ("$100"), otherwise two decimals.
+    private static func money(_ value: Double) -> String {
+        value == value.rounded() ? String(format: "$%.0f", value) : simplePrice(value)
+    }
+
+    /// Token counts as "100k" / "1M".
+    private static func tokens(_ value: Int) -> String {
+        if value >= 1_000_000, value % 1_000_000 == 0 { return "\(value / 1_000_000)M" }
+        if value >= 1_000 { return String(format: "%.0fk", Double(value) / 1_000) }
         return "\(value)"
     }
 
@@ -269,17 +320,23 @@ private struct CatalogModelRow: View {
         return blueGradient(min(1, log10(value + 1) / log10(max + 1)))
     }
 
-    /// Colors a usage limit on the same blue scale, but inverted: a high
-    /// request count is the "cheap" end (cyan), a low one is the
+    /// Colors an allowance on the same blue scale, but inverted: a high
+    /// allowance is the "cheap" end (cyan), a low one is the
     /// "expensive"/scarce end (indigo).
-    private static func limitColor(_ value: Int, max: Double) -> Color {
-        let t = min(1, log10(Double(value) + 1) / log10(max + 1))
+    private static func limitColor(_ value: Double, max: Double) -> Color {
+        guard max > 0 else { return blueGradient(0) }
+        let t = min(1, log10(value + 1) / log10(max + 1))
         return blueGradient(1 - t)
     }
 
     private static func blueGradient(_ t: Double) -> Color {
         Color(hue: 0.52 + 0.18 * t, saturation: 0.45 + 0.30 * t, brightness: 0.95 - 0.10 * t)
     }
+}
+
+private extension GoMonthlyAllowance {
+    /// The biggest allowance across the plans.
+    var largest: Double? { [go, goPlus, goTeams].compactMap { $0 }.max() }
 }
 
 #Preview {
