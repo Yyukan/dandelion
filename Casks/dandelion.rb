@@ -1,6 +1,6 @@
 cask "dandelion" do
   version "0.7.0"
-  sha256 "951623f67b1e4e95316e74723010caf973381668bc0a1bf72c26c8b03a04a31c"
+  sha256 "e95579dd8417c9fe50e6d298109939b1766709a6e5c87ec8847d9df6a89235ee"
 
   url "https://github.com/Yyukan/dandelion/releases/download/v#{version}/Dandelion.zip"
   name "Dandelion"
