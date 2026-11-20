@@ -11,7 +11,9 @@ Dandelion is a **Zen/Go-only**, fully graphical dashboard, styled as a custom da
 
 - How much is left in my Zen balance, and what's my auto-reload threshold / monthly limit?
 - How much of my Go 5h/weekly/monthly usage window have I used, and when does it reset?
-- What do all Zen/Go models cost (input/output/cache read/cache write per 1M tokens) and what are their context/output limits?
+- What do all Zen/Go models cost (input/output per 1M tokens, long-context tier, audio/image unit price) and what monthly allowance does each Go model get per plan?
+
+The catalog comes straight from OpenCode's model endpoints, `https://opencode.ai/zen/v1/models` (Zen) and `https://opencode.ai/zen/go/v1/models` (Go, including `go.monthly_usage`), cached for 24h. No docs page is scraped.
 
 <p align="center">
   <img src="assets/demo.png" alt="Dandelion demo" width="480">

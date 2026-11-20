@@ -2,46 +2,35 @@
 //  ModelCatalogService.swift
 //  Dandelion
 //
-//  Builds the Zen/Go model catalog from OpenCode's own sources only:
+//  Builds the Zen/Go model catalog from OpenCode's model endpoints only:
 //
-//  1. `https://opencode.ai/zen/v1/models` and `https://opencode.ai/zen/go/v1/models`
-//     define *which* models exist. Each entry is only
-//     `{id, object, created, owned_by}` - no name, price or limit metadata.
-//  2. The console docs pages supply that metadata, joined by model ID:
-//       https://opencode.ai/v2/docs/console/models -> Zen prices
-//       https://opencode.ai/v2/docs/console/go     -> Go prices + the 5h/weekly/
-//                                                     monthly usage-limit table
-//     Both pages are still being filled in, so the legacy docs pages
-//     (https://opencode.ai/docs/zen and /docs/go) are merged in underneath
-//     them: the console value wins wherever both have one, never the reverse.
-//  3. Models the docs mark as deprecated are dropped; models no page covers
-//     are still listed with the model ID as their name and no price.
+//    https://opencode.ai/zen/v1/models     -> Zen models
+//    https://opencode.ai/zen/go/v1/models  -> Go models (+ `go.monthly_usage`)
+//
+//  Each entry carries the model's name, limits, text/cache prices (with any
+//  long-context override), audio/image unit prices and, on Go, the monthly
+//  dollar allowance per plan. No docs page is fetched or parsed.
 //
 //  Cached locally for 24h, falling back to the last successful catalog when a
-//  fetch or parse fails, so an OpenCode docs redesign never empties the view.
+//  fetch or decode fails, so an endpoint outage never empties the view.
 //
 
 import Foundation
 
-/// Fetches, joins and caches OpenCode's Zen/Go catalog into `CatalogModel`.
+/// Fetches, decodes and caches OpenCode's Zen/Go catalog into `CatalogModel`.
 actor ModelCatalogService {
     private static let zenModelsURL = URL(string: "https://opencode.ai/zen/v1/models")!
     private static let goModelsURL = URL(string: "https://opencode.ai/zen/go/v1/models")!
-    private static let zenDocsURL = URL(string: "https://opencode.ai/v2/docs/console/models")!
-    private static let goDocsURL = URL(string: "https://opencode.ai/v2/docs/console/go")!
-    /// Legacy (v1) docs pages, used only to fill in whatever the console pages
-    /// don't list yet - they currently cover more models than v2 does.
-    private static let zenLegacyDocsURL = URL(string: "https://opencode.ai/docs/zen")!
-    private static let goLegacyDocsURL = URL(string: "https://opencode.ai/docs/go")!
 
     private static let refreshInterval: TimeInterval = 24 * 60 * 60 // daily cadence
-    /// The console docs pages are occasionally served without their tables (an
-    /// empty shell), so one fetch isn't reliable enough for a 24h cache.
-    private static let fetchAttempts = 3
-    private static let retryDelay: Duration = .seconds(2)
+    /// Bumped whenever `CatalogModel`'s shape or meaning changes, so a cache
+    /// written by an older build is refetched instead of misread.
+    private static let cacheFormatVersion = 3
 
     private let session: URLSession
     private let cacheFileURL: URL
+    /// Reads the `opencode-go` key used for the console Go page.
+    private let authDiscovery = AuthDiscoveryService()
     /// Pre-migration caches (models.dev catalog + separate Go limits table).
     private let legacyCacheFileURLs: [URL]
 
@@ -64,7 +53,7 @@ actor ModelCatalogService {
 
     /// Returns the Zen + Go catalog, preferring a fresh local cache (younger
     /// than 24h) unless `forceRefresh` is set. Falls back to the last
-    /// successful cache when a fetch or parse fails.
+    /// successful cache when a fetch or decode fails.
     func loadCatalog(forceRefresh: Bool = false) async -> [CatalogModel] {
         let cached = readCache()
 
@@ -74,7 +63,7 @@ actor ModelCatalogService {
 
         do {
             let models = try await fetchCatalog()
-            writeCache(CachedCatalog(fetchedAt: Date(), models: models))
+            writeCache(CachedCatalog(formatVersion: Self.cacheFormatVersion, fetchedAt: Date(), models: models))
             removeLegacyCaches()
             return models
         } catch {
@@ -82,82 +71,136 @@ actor ModelCatalogService {
         }
     }
 
-    // MARK: Remote fetch + join
+    // MARK: Remote fetch
 
     private func fetchCatalog() async throws -> [CatalogModel] {
-        async let zenIDs = fetchModelIDs(from: Self.zenModelsURL)
-        async let goIDs = fetchModelIDs(from: Self.goModelsURL)
-        async let zenHTML = fetchDocsHTML(from: Self.zenDocsURL)
-        async let goHTML = fetchDocsHTML(from: Self.goDocsURL)
-        async let zenLegacyHTML = fetchDocsHTML(from: Self.zenLegacyDocsURL)
-        async let goLegacyHTML = fetchDocsHTML(from: Self.goLegacyDocsURL)
-
-        let (zen, go, zenDocs, goDocs, zenLegacy, goLegacy) = try await (
-            zenIDs, goIDs, zenHTML, goHTML, zenLegacyHTML, goLegacyHTML
-        )
+        async let zenModels = fetchModels(from: Self.zenModelsURL, provider: .zen)
+        async let goModels = fetchModels(from: Self.goModelsURL, provider: .go)
+        let (zen, go) = try await (zenModels, goModels)
         guard !zen.isEmpty, !go.isEmpty else { throw URLError(.cannotParseResponse) }
 
-        let zenPage = Self.parseDocs(zenDocs).fillingGaps(from: Self.parseDocs(zenLegacy))
-        let goPage = Self.parseDocs(goDocs).fillingGaps(from: Self.parseDocs(goLegacy))
-        guard !zenPage.isEmpty || !goPage.isEmpty else { throw URLError(.cannotParseResponse) }
-
-        var models = zen
-            .filter { !zenPage.isDeprecated($0, slug: Self.slug($0)) }
-            .map { id in
-                CatalogModel(
-                    modelID: id,
-                    displayName: zenPage.nameByID[id] ?? id,
-                    provider: .zen,
-                    pricing: zenPage.pricingByID[id] ?? .unpublished,
-                    usageLimits: nil
-                )
-            }
-        models += go.map { id in
-            CatalogModel(
-                modelID: id,
-                displayName: goPage.nameByID[id] ?? id,
-                provider: .go,
-                pricing: goPage.pricingByID[id] ?? .unpublished,
-                usageLimits: goPage.limitsByID[id]
-            )
-        }
-
-        return models.sorted {
+        var models = (zen + go).sorted {
             $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
         }
+        models = await applyingGoRequestEstimates(to: models)
+        return models
     }
 
-    private struct ModelListResponse: Decodable {
-        struct Entry: Decodable {
-            let id: String
+    // MARK: Go 5h request estimates
+
+    /// The console's Go page publishes the one number no API exposes: an
+    /// estimate of requests per rolling 5-hour window, per plan. It is
+    /// server-rendered HTML behind the API key (the page returns 401 without
+    /// it), so it is parsed here. Treated as optional: any failure leaves
+    /// `requestEstimate` nil and the catalog otherwise untouched.
+    private func applyingGoRequestEstimates(to models: [CatalogModel]) async -> [CatalogModel] {
+        guard let key = authDiscovery.discoverCredentials()
+            .first(where: { $0.provider == .go })?.apiKey
+        else { return models }
+
+        var request = URLRequest(url: URL(string: "https://opencode.ai/console/go")!)
+        request.timeoutInterval = 20
+        request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+        request.setValue("text/html", forHTTPHeaderField: "Accept")
+        request.setValue("Mozilla/5.0 (Dandelion)", forHTTPHeaderField: "User-Agent")
+
+        guard let (data, response) = try? await session.data(for: request),
+              let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+              let html = String(data: data, encoding: .utf8)
+        else { return models }
+
+        let estimates = Self.parseRequestEstimates(from: html)
+        guard !estimates.isEmpty else { return models }
+
+        let named = estimates.map { (Self.normalized($0.name), $0.estimate) }
+        var updated = models
+        for index in updated.indices where updated[index].provider == .go {
+            let target = Self.normalized(updated[index].displayName)
+            guard let match = named.first(where: { target.hasPrefix($0.0) || $0.0.hasPrefix(target) })
+            else { continue }
+            updated[index].requestEstimate = match.1
         }
-        let data: [Entry]
+        return updated
     }
 
-    private func fetchModelIDs(from url: URL) async throws -> [String] {
+    /// Reads rows shaped like:
+    /// `<tr><td>DeepSeek V4 Pro …</td><td>…</td><td>… Go: 1,040; Go Plus: 4,180 …</td>…`
+    /// and returns the model name with its per-plan estimate.
+    static func parseRequestEstimates(from html: String) -> [(name: String, estimate: GoRequestEstimate)] {
+        var entries: [(String, GoRequestEstimate)] = []
+
+        let rowRegex = try? NSRegularExpression(
+            pattern: "<tr[^>]*>([\\s\\S]*?)</tr>",
+            options: [.caseInsensitive]
+        )
+        let cellRegex = try? NSRegularExpression(
+            pattern: "<t[dh][^>]*>([\\s\\S]*?)</t[dh]>",
+            options: [.caseInsensitive]
+        )
+        let nsHTML = html as NSString
+        rowRegex?.enumerateMatches(in: html, range: NSRange(location: 0, length: nsHTML.length)) { match, _, _ in
+            guard let match, let cellRegex else { return }
+            let row = nsHTML.substring(with: match.range(at: 1))
+            let nsRow = row as NSString
+            let cells = cellRegex.matches(in: row, range: NSRange(location: 0, length: nsRow.length))
+                .map { nsRow.substring(with: $0.range(at: 1)) }
+            guard cells.count >= 3 else { return }
+
+            let name = Self.plainText(cells[0])
+            guard !name.isEmpty, name != "Model" else { return }
+
+            let numbers = Self.plainText(cells.joined(separator: " "))
+            guard let go = Self.requestCount(in: numbers, label: "Go:"),
+                  let plus = Self.requestCount(in: numbers, label: "Go Plus:")
+            else { return }
+
+            var estimate = GoRequestEstimate(go: go >= 0 ? go : nil, goPlus: plus >= 0 ? plus : nil)
+            estimate.isUnlimited = go < 0 || plus < 0
+            entries.append((name, estimate))
+        }
+        return entries
+    }
+
+    /// `"Go: 1,040"` -> 1040, `"Go: ∞"` -> -1, missing -> nil.
+    private static func requestCount(in text: String, label: String) -> Int? {
+        guard let range = text.range(of: label) else { return nil }
+        let tail = text[range.upperBound...]
+            .trimmingCharacters(in: .whitespaces)
+            .prefix(24)
+        if tail.hasPrefix("∞") { return -1 }
+        let digits = tail.prefix { $0.isNumber || $0 == "," }
+            .replacingOccurrences(of: ",", with: "")
+        return Int(digits)
+    }
+
+    private static func plainText(_ html: String) -> String {
+        let stripped = html.replacingOccurrences(
+            of: "<[^>]+>",
+            with: " ",
+            options: .regularExpression
+        )
+        return stripped
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespaces)
+    }
+
+    /// Lowercases and drops the console table's badge words so
+    /// "Muse Spark 1.2 Contributor Limited regions" still matches
+    /// "Muse Spark 1.2 Contributor".
+    private static func normalized(_ name: String) -> String {
+        var text = name.lowercased()
+        for noise in ["limited regions", "limited time", "new", "free"] {
+            text = text.replacingOccurrences(of: noise, with: "")
+        }
+        return text.filter { $0.isLetter || $0.isNumber }
+    }
+
+    private func fetchModels(from url: URL, provider: CatalogProvider) async throws -> [CatalogModel] {
         let data = try await get(url)
-        return try JSONDecoder().decode(ModelListResponse.self, from: data).data.map(\.id)
-    }
-
-    /// Fetches a docs page, retrying while the response contains no tables at
-    /// all (a degraded response), and failing rather than returning a page we
-    /// would silently parse into "no models".
-    private func fetchDocsHTML(from url: URL) async throws -> String {
-        var lastError: Error = URLError(.cannotParseResponse)
-
-        for attempt in 0..<Self.fetchAttempts {
-            do {
-                let data = try await get(url)
-                let html = String(decoding: data, as: UTF8.self)
-                if !Self.parseRows(html).isEmpty { return html }
-            } catch {
-                lastError = error
-            }
-            if attempt < Self.fetchAttempts - 1 {
-                try? await Task.sleep(for: Self.retryDelay)
-            }
-        }
-        throw lastError
+        return try JSONDecoder().decode(ModelListResponse.self, from: data).data
+            .compactMap { $0.value?.catalogModel(provider: provider) }
     }
 
     private func get(_ url: URL) async throws -> Data {
@@ -171,224 +214,239 @@ actor ModelCatalogService {
         return data
     }
 
-    // MARK: Docs-page parsing
+    // MARK: Endpoint payload
 
-    /// Metadata scraped out of one console docs page, keyed by model ID.
-    private struct DocsPage {
-        var nameByID: [String: String] = [:]
-        var pricingByID: [String: ModelPricing] = [:]
-        var limitsByID: [String: GoUsageLimits] = [:]
-        var deprecatedIDs: Set<String> = []
-        /// Deprecated models can be listed without an endpoint row (and so
-        /// without a model ID); matching their slug against the official model
-        /// IDs still lets us drop them.
-        var deprecatedSlugs: Set<String> = []
+    private struct ModelListResponse: Decodable {
+        let data: [Lossy<ModelEntry>]
+    }
 
-        var isEmpty: Bool {
-            nameByID.isEmpty && pricingByID.isEmpty && limitsByID.isEmpty
-        }
+    /// Decodes one element, or `nil` if it doesn't fit - one odd model must not
+    /// empty the whole list.
+    private struct Lossy<Value: Decodable>: Decodable {
+        let value: Value?
 
-        /// Fills in whatever this page doesn't cover from the legacy docs page,
-        /// field by field. Console-page data always wins where both have it, so
-        /// this only ever adds coverage.
-        func fillingGaps(from fallback: DocsPage) -> DocsPage {
-            var merged = self
-            for (id, name) in fallback.nameByID where merged.nameByID[id] == nil {
-                merged.nameByID[id] = name
-            }
-            for (id, pricing) in fallback.pricingByID where merged.pricingByID[id] == nil {
-                merged.pricingByID[id] = pricing
-            }
-            for (id, limits) in fallback.limitsByID where merged.limitsByID[id] == nil {
-                merged.limitsByID[id] = limits
-            }
-            merged.deprecatedIDs.formUnion(fallback.deprecatedIDs)
-            merged.deprecatedSlugs.formUnion(fallback.deprecatedSlugs)
-            return merged
-        }
-
-        func isDeprecated(_ modelID: String, slug modelSlug: String) -> Bool {
-            deprecatedIDs.contains(modelID) || deprecatedSlugs.contains(modelSlug)
+        init(from decoder: Decoder) throws {
+            value = try? Value(from: decoder)
         }
     }
 
-    private static func parseDocs(_ html: String) -> DocsPage {
-        let tables = rawTables(in: html)
-        var page = DocsPage()
-        var nameToID: [String: String] = [:]
-        var slugToID: [String: String] = [:]
+    private struct ModelEntry: Decodable {
+        let id: String
+        let name: String?
+        let family: String?
+        let description: String?
+        let releaseDate: String?
+        let openWeights: Bool?
+        let modalities: Modalities?
+        let capabilities: Capabilities?
+        let limit: Limit?
+        let cost: Cost?
+        let go: GoInfo?
 
-        // Pass 1: the "Model | Model ID | Endpoint | AI SDK Package" reference
-        // table is what lets every other table be joined by ID instead of by
-        // display name (name joins broke on decorated promo rows).
-        for table in tables where isReferenceTable(table) {
-            for cells in table.dropFirst() where cells.count >= 2 {
-                let name = baseName(primaryLabel(cells[0]))
-                let id = cellText(cells[1])
-                guard !name.isEmpty, !id.isEmpty else { continue }
-                nameToID[name] = id
-                slugToID[slug(name)] = id
-                page.nameByID[id] = name
+        enum CodingKeys: String, CodingKey {
+            case id, name, family, description, modalities, capabilities, limit, cost, go
+            case releaseDate = "release_date"
+            case openWeights = "open_weights"
+        }
+
+        func catalogModel(provider: CatalogProvider) -> CatalogModel {
+            CatalogModel(
+                modelID: id,
+                displayName: name ?? id,
+                provider: provider,
+                pricing: cost?.pricing ?? .unpublished,
+                goAllowance: provider == .go ? go?.monthlyUsage?.allowance : nil,
+                family: family,
+                description: description,
+                contextLimit: limit?.context,
+                outputLimit: limit?.output,
+                modalities: modalities.map {
+                    ModelModalities(input: $0.input ?? [], output: $0.output ?? [])
+                },
+                capabilities: capabilities?.supported ?? [],
+                releaseDate: releaseDate,
+                openWeights: openWeights
+            )
+        }
+    }
+
+    private struct Modalities: Decodable {
+        let input: [String]?
+        let output: [String]?
+    }
+
+    /// Capabilities come either as a bare flag (`"structured_output": true`)
+    /// or as an object (`"tools": {"supported": true}`); keeps the names of
+    /// those marked supported.
+    private struct Capabilities: Decodable {
+        let supported: [String]
+
+        private struct Key: CodingKey {
+            let stringValue: String
+            var intValue: Int? { nil }
+            init(stringValue: String) { self.stringValue = stringValue }
+            init?(intValue: Int) { nil }
+        }
+
+        private struct Flag: Decodable {
+            let supported: Bool?
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: Key.self)
+            supported = container.allKeys.filter { key in
+                if let flag = try? container.decode(Bool.self, forKey: key) { return flag }
+                return (try? container.decode(Flag.self, forKey: key))?.supported == true
             }
+            .map(\.stringValue)
+            .sorted()
+        }
+    }
+
+    private struct Limit: Decodable {
+        let context: Int?
+        let output: Int?
+    }
+
+    private struct Cost: Decodable {
+        let text: Media?
+        let audio: Media?
+        let image: Media?
+
+        var pricing: ModelPricing {
+            ModelPricing(
+                inputPerM: text?.input?.price,
+                outputPerM: text?.output?.price,
+                cacheReadPerM: text?.input?.cache?.read,
+                cacheWritePerM: text?.input?.cache?.write,
+                longContext: text?.longContext,
+                unitPrice: text == nil ? (audio?.unitPrice ?? image?.unitPrice) : nil
+            )
+        }
+    }
+
+    private struct Media: Decodable {
+        let input: Rate?
+        let output: Rate?
+
+        /// The first context-size override, joined across input and output.
+        var longContext: LongContextPricing? {
+            let threshold = input?.contextThreshold ?? output?.contextThreshold
+            guard let threshold else { return nil }
+            let inputPrice = input?.override(above: threshold)?.price
+            let outputPrice = output?.override(above: threshold)?.price
+            guard inputPrice != nil || outputPrice != nil else { return nil }
+            return LongContextPricing(aboveTokens: threshold, inputPerM: inputPrice, outputPerM: outputPrice)
         }
 
-        func resolveID(_ rawName: String) -> String? {
-            let name = baseName(primaryLabel(rawName))
-            guard !name.isEmpty else { return nil }
-            return nameToID[name] ?? slugToID[slug(name)]
-        }
-
-        // Pass 2: prices, usage limits and the deprecation table.
-        for table in tables {
-            guard let header = table.first else { continue }
-            let columns = header.map { cellText($0).lowercased() }
-
-            if columns.contains("model id") {
-                continue
-            } else if columns.contains("deprecation date") {
-                for cells in table.dropFirst() {
-                    guard let cell = cells.first else { continue }
-                    let name = baseName(primaryLabel(cell))
-                    guard !name.isEmpty else { continue }
-                    if let id = resolveID(cell) {
-                        page.deprecatedIDs.insert(id)
-                    }
-                    page.deprecatedSlugs.insert(slug(name))
+        var unitPrice: UnitPrice? {
+            for rate in [input, output] {
+                if let price = rate?.price, let unit = rate?.unit {
+                    return UnitPrice(price: price, unit: unit)
                 }
-            } else if columns.count >= 3, columns[0] == "model", columns[1] == "input", columns[2] == "output" {
-                for cells in table.dropFirst() where cells.count >= 3 {
-                    guard let id = resolveID(cells[0]) else { continue }
-                    // Long-context and peak/off-peak variants repeat a model;
-                    // the docs list the cheapest tier first, so keep the first.
-                    guard page.pricingByID[id] == nil else { continue }
-                    page.pricingByID[id] = ModelPricing(
-                        inputPerM: price(cells[1]),
-                        outputPerM: price(cells[2])
-                    )
-                }
-            } else if columns.count == 4, columns[1].contains("requests per 5 hour") {
-                for cells in table.dropFirst() where cells.count >= 4 {
-                    guard let id = resolveID(cells[0]),
-                          let h5 = firstNumber(cells[1]),
-                          let week = firstNumber(cells[2]),
-                          let month = firstNumber(cells[3]) else { continue }
-                    page.limitsByID[id] = GoUsageLimits(
-                        requestsPer5h: h5,
-                        requestsPerWeek: week,
-                        requestsPerMonth: month
-                    )
-                }
+            }
+            return nil
+        }
+    }
+
+    private struct Rate: Decodable {
+        let price: Double?
+        let unit: String?
+        let cache: Cache?
+        let overrides: [Lossy<Override>]?
+
+        var contextThreshold: Int? {
+            overrides?.lazy.compactMap { $0.value?.when?.context?.gt }.first
+        }
+
+        func override(above threshold: Int) -> Override? {
+            overrides?.lazy.compactMap(\.value).first { $0.when?.context?.gt == threshold }
+        }
+    }
+
+    /// Cache prices. `read` is always a flat number, but `write` is either a
+    /// flat number or an object keyed by retention window
+    /// (`{"30m": 0.125, "12h": 0.25}`, `{"5m": 1.875, "1h": 3}`). Models that
+    /// use the tiered form must not be dropped: decode either shape and keep
+    /// the shortest-retention price (the lowest one), which is what a default
+    /// request actually pays.
+    private struct Cache: Decodable {
+        let read: Double?
+        let write: Double?
+
+        private enum CodingKeys: String, CodingKey {
+            case read, write
+        }
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            read = Self.number(container, forKey: .read)
+            write = Self.number(container, forKey: .write)
+        }
+
+        private static func number(
+            _ container: KeyedDecodingContainer<CodingKeys>,
+            forKey key: CodingKeys
+        ) -> Double? {
+            if let flat = try? container.decodeIfPresent(Double.self, forKey: key) {
+                return flat
+            }
+            if let tiers = try? container.decodeIfPresent([String: Double].self, forKey: key) {
+                return tiers.values.min()
+            }
+            return nil
+        }
+    }
+
+    private struct Override: Decodable {
+        struct When: Decodable {
+            struct Bound: Decodable {
+                let gt: Int?
+            }
+            let context: Bound?
+        }
+        let when: When?
+        let price: Double?
+    }
+
+    private struct GoInfo: Decodable {
+        struct MonthlyUsage: Decodable {
+            let go: Double?
+            let goPlus: Double?
+            let goTeams: Double?
+
+            enum CodingKeys: String, CodingKey {
+                case go
+                case goPlus = "go-plus"
+                case goTeams = "go-teams"
+            }
+
+            var allowance: GoMonthlyAllowance? {
+                guard go != nil || goPlus != nil || goTeams != nil else { return nil }
+                return GoMonthlyAllowance(go: go, goPlus: goPlus, goTeams: goTeams)
             }
         }
 
-        return page
-    }
+        let monthlyUsage: MonthlyUsage?
 
-    private static func isReferenceTable(_ table: [[String]]) -> Bool {
-        guard let header = table.first else { return false }
-        return header.map({ cellText($0).lowercased() }).contains("model id")
-    }
-
-    /// All tables in the document, each as rows of raw cell HTML (callers apply
-    /// `primaryLabel`/`cellText`/`firstNumber` as appropriate).
-    private static func rawTables(in html: String) -> [[[String]]] {
-        guard let regex = try? NSRegularExpression(
-            pattern: "<table[^>]*>([\\s\\S]*?)</table>",
-            options: [.caseInsensitive]
-        ) else { return [] }
-
-        let nsHTML = html as NSString
-        return regex.matches(in: html, range: NSRange(location: 0, length: nsHTML.length))
-            .map { parseRows(nsHTML.substring(with: $0.range(at: 1))) }
-            .filter { !$0.isEmpty }
-    }
-
-    /// A price cell: `"$0.14"` -> 0.14, `"Free"` -> 0 (free), `"-"`/blank -> nil.
-    private static func price(_ cellHTML: String) -> Double? {
-        let text = cellText(removingDeletedSpans(cellHTML)).lowercased()
-        if text == "free" { return 0 }
-        guard let match = text.range(of: #"\d+(\.\d+)?"#, options: .regularExpression) else { return nil }
-        return Double(text[match])
-    }
-
-    /// Drops a trailing parenthetical qualifier ("Qwen3.7 Plus (≤ 256K tokens)"
-    /// -> "Qwen3.7 Plus") so variant rows join to the plain model.
-    private static func baseName(_ name: String) -> String {
-        name.replacingOccurrences(of: #"\s*\([^)]*\)\s*$"#, with: "", options: .regularExpression)
-            .trimmingCharacters(in: .whitespaces)
-    }
-
-    private static func slug(_ name: String) -> String {
-        name.lowercased()
-            .replacingOccurrences(of: #"[^a-z0-9]+"#, with: "-", options: .regularExpression)
-            .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
-    }
-
-    // MARK: HTML helpers
-
-    /// Splits a `<table>` block into rows of raw cell HTML (tags intact).
-    private static func parseRows(_ tableHTML: String) -> [[String]] {
-        guard let rowRegex = try? NSRegularExpression(pattern: "<tr[^>]*>(.*?)</tr>", options: [.dotMatchesLineSeparators]),
-              let cellRegex = try? NSRegularExpression(pattern: "<t[dh][^>]*>(.*?)</t[dh]>", options: [.dotMatchesLineSeparators])
-        else { return [] }
-
-        let nsHTML = tableHTML as NSString
-        var rows: [[String]] = []
-        for rowMatch in rowRegex.matches(in: tableHTML, range: NSRange(location: 0, length: nsHTML.length)) {
-            let rowHTML = nsHTML.substring(with: rowMatch.range(at: 1))
-            let nsRow = rowHTML as NSString
-            let cellMatches = cellRegex.matches(in: rowHTML, range: NSRange(location: 0, length: nsRow.length))
-            guard !cellMatches.isEmpty else { continue }
-            rows.append(cellMatches.map { nsRow.substring(with: $0.range(at: 1)) })
+        enum CodingKeys: String, CodingKey {
+            case monthlyUsage = "monthly_usage"
         }
-        return rows
-    }
-
-    /// Cell text with the row's flair removed: `<del>` blocks (superseded
-    /// values) are dropped and everything from the first `<br>` on (e.g.
-    /// "4x · Ends Sep 20") is discarded.
-    private static func primaryLabel(_ cellHTML: String) -> String {
-        let withoutDeleted = removingDeletedSpans(cellHTML)
-        return cellText(withoutDeleted.components(separatedBy: "<br").first ?? "")
-    }
-
-    /// The first number in a cell, ignoring thousands separators and any
-    /// struck-through value ahead of it (`<del>6,500</del>…26,000` -> 26,000).
-    private static func firstNumber(_ cellHTML: String) -> Int? {
-        let text = cellText(removingDeletedSpans(cellHTML))
-        guard let match = text.range(of: #"[\d][\d,]*"#, options: .regularExpression) else { return nil }
-        return Int(text[match].replacingOccurrences(of: ",", with: ""))
-    }
-
-    private static func removingDeletedSpans(_ html: String) -> String {
-        guard let regex = try? NSRegularExpression(
-            pattern: "<del[^>]*>[\\s\\S]*?</del>",
-            options: [.caseInsensitive]
-        ) else { return html }
-        let range = NSRange(html.startIndex..., in: html)
-        return regex.stringByReplacingMatches(in: html, range: range, withTemplate: "")
-    }
-
-    private static func cellText(_ html: String) -> String {
-        stripTags(html).replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private static func stripTags(_ html: String) -> String {
-        html.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: Local disk cache
 
     private struct CachedCatalog: Codable {
+        let formatVersion: Int
         let fetchedAt: Date
         let models: [CatalogModel]
     }
 
     private func readCache() -> CachedCatalog? {
-        guard let data = try? Data(contentsOf: cacheFileURL) else { return nil }
-        return try? JSONDecoder().decode(CachedCatalog.self, from: data)
+        guard let data = try? Data(contentsOf: cacheFileURL),
+              let cached = try? JSONDecoder().decode(CachedCatalog.self, from: data),
+              cached.formatVersion == Self.cacheFormatVersion else { return nil }
+        return cached
     }
 
     private func writeCache(_ catalog: CachedCatalog) {
